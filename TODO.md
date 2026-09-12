@@ -33,6 +33,22 @@
       face = circle + two dot eyes + curved smile) rather than a single
       `ShapeKind`.
 
+## Other activity ideas
+
+- [ ] "Complete the picture" activity — a simple solid-colour image with
+      one piece missing (left blank/outlined); the child scribbles/colours
+      in the missing piece, and on submit that area is replaced with the
+      real solid-colour piece, completing the picture. A different
+      interaction model from tracing-and-scoring: it's about rewarding
+      any reasonable attempt at filling the space (not accuracy against a
+      guide path), with a satisfying reveal at the end regardless of how
+      messy the colouring is. Needs: a way to define an image + its
+      missing region (simplest: a filled shape/path marking the "hole",
+      similar to how Shapes/Doodles define their guides), a "did they
+      colour roughly inside the hole" check (loose - just enough ink
+      inside the region, not the precise on-path scoring TraceLine does),
+      and a reveal step that swaps the ink for the solid-colour fill.
+
 ## Visual design
 
 - [ ] Give the app a soft, child-friendly aesthetic — it's currently
