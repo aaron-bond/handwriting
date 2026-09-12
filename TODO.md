@@ -21,5 +21,8 @@
 - [x] Workbook: everyday words (colours, household objects, etc.) — 10
       words, with Next/Previous navigation and progress ("Word X of Y").
 - [ ] Workbook: maths (simple equations, e.g. "1 + 1 = 2").
-- [ ] Workbook: shapes.
+- [x] Workbook: shapes — circle, square, triangle, rectangle, star.
+      TraceLine gained a `shape` input alongside `text` (drawn via Canvas
+      path primitives instead of strokeText), reusing the same pixel-mask
+      tracing/scoring pipeline unchanged.
 - [ ] Workbook: alphabet (A-Z, one letter at a time).

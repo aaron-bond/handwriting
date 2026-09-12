@@ -2,7 +2,9 @@
   <button type="button" (click)="back.emit()">Home</button>
 
   <span class="title">{{ workbook().title }}</span>
-  <span class="progress">Word {{ index() + 1 }} of {{ workbook().words.length }}</span>
+  <span class="progress">
+    {{ item().kind === 'shape' ? 'Shape' : 'Word' }} {{ index() + 1 }} of {{ workbook().items.length }}
+  </span>
 
   <button type="button" (click)="previous()" [disabled]="!canGoPrevious()">Previous</button>
   <button type="button" (click)="next()" [disabled]="!canGoNext()">Next</button>
@@ -10,18 +12,20 @@
   <button type="button" (click)="clear()">Clear</button>
   <button type="button" (click)="check()">Check</button>
 
-  <label for="practice-cursive" class="checkbox-label">
-    <input
-      id="practice-cursive"
-      type="checkbox"
-      [checked]="cursive()"
-      (change)="cursiveChange.emit($any($event.target).checked)"
-    />
-    Cursive
-  </label>
+  @if (item().kind === 'text') {
+    <label for="practice-cursive" class="checkbox-label">
+      <input
+        id="practice-cursive"
+        type="checkbox"
+        [checked]="cursive()"
+        (change)="cursiveChange.emit($any($event.target).checked)"
+      />
+      Cursive
+    </label>
+  }
 </div>
 
-<app-trace-line [text]="word()" [cursive]="cursive()" />
+<app-trace-line [text]="textValue()" [shape]="shapeValue()" [cursive]="cursive()" />
 
 @if (feedback(); as message) {
   <p class="feedback">{{ message }}</p>

@@ -2,7 +2,7 @@
   @for (workbook of workbooks; track workbook.id) {
     <button type="button" class="tile" (click)="selectWorkbook.emit(workbook)">
       <span class="tile-title">{{ workbook.title }}</span>
-      <span class="tile-meta">{{ workbook.words.length }} words</span>
+      <span class="tile-meta">{{ workbook.items.length }} {{ itemLabel(workbook) }}</span>
     </button>
   }
 

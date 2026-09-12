@@ -12,4 +12,8 @@ export class Home {
 
   readonly selectWorkbook = output<Workbook>();
   readonly selectCustom = output<void>();
+
+  itemLabel(workbook: Workbook): string {
+    return workbook.items[0]?.kind === 'shape' ? 'shapes' : 'words';
+  }
 }

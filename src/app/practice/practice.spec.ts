@@ -12,7 +12,11 @@ describe('Practice', () => {
 
     fixture = TestBed.createComponent(Practice);
     component = fixture.componentInstance;
-    fixture.componentRef.setInput('workbook', { id: 'test', title: 'Test', words: ['hello'] });
+    fixture.componentRef.setInput('workbook', {
+      id: 'test',
+      title: 'Test',
+      items: [{ kind: 'text', value: 'hello' }],
+    });
     fixture.componentRef.setInput('cursive', false);
     await fixture.whenStable();
   });

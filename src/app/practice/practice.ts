@@ -1,5 +1,5 @@
 import { Component, computed, effect, input, output, signal, viewChild } from '@angular/core';
-import { TraceLine } from '../trace-line/trace-line';
+import { ShapeKind, TraceLine } from '../trace-line/trace-line';
 import { Workbook } from '../workbook';
 
 @Component({
@@ -18,9 +18,23 @@ export class Practice {
   protected readonly index = signal(0);
   protected readonly feedback = signal<string | null>(null);
 
-  protected readonly word = computed(() => this.workbook().words[this.index()]);
+  protected readonly item = computed(() => this.workbook().items[this.index()]);
   protected readonly canGoPrevious = computed(() => this.index() > 0);
-  protected readonly canGoNext = computed(() => this.index() < this.workbook().words.length - 1);
+  protected readonly canGoNext = computed(() => this.index() < this.workbook().items.length - 1);
+
+  // Narrowed views of `item()` for TraceLine's inputs - a single local
+  // read of item() lets TypeScript narrow `.value`'s type per branch,
+  // which two separate `item()` calls in the template can't do (both
+  // variants share a `value` property, so without narrowing its type is
+  // `string | ShapeKind`, satisfying neither `text` nor `shape`).
+  protected readonly textValue = computed(() => {
+    const current = this.item();
+    return current.kind === 'text' ? current.value : '';
+  });
+  protected readonly shapeValue = computed<ShapeKind | null>(() => {
+    const current = this.item();
+    return current.kind === 'shape' ? current.value : null;
+  });
 
   private readonly traceLine = viewChild.required(TraceLine);
 

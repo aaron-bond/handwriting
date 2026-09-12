@@ -59,6 +59,8 @@ interface GuideFont {
   isCursive: boolean;
 }
 
+export type ShapeKind = 'circle' | 'square' | 'triangle' | 'rectangle' | 'star';
+
 @Component({
   selector: 'app-trace-line',
   imports: [],
@@ -66,7 +68,10 @@ interface GuideFont {
   styleUrl: './trace-line.css',
 })
 export class TraceLine {
-  readonly text = input.required<string>();
+  // Exactly one of `text`/`shape` is meaningful per use - `shape` wins
+  // when set, since a guide is either a word or a shape, never both.
+  readonly text = input<string>('');
+  readonly shape = input<ShapeKind | null>(null);
   readonly fontSize = input(120);
   readonly cursive = input(false);
 
@@ -101,6 +106,7 @@ export class TraceLine {
 
     effect(() => {
       this.text();
+      this.shape();
       this.fontSize();
       this.cursive();
       this.drawGuide();
@@ -135,6 +141,49 @@ export class TraceLine {
     ctx.strokeText(this.text(), 24, baselineY);
   }
 
+  // Plots and strokes a shape centred in the ROW_HEIGHT box - the shape
+  // equivalent of strokeGuideText, used identically for the visible guide
+  // and both hit-testing masks.
+  private strokeGuideShape(ctx: CanvasRenderingContext2D, shape: ShapeKind, width: number): void {
+    const cx = width / 2;
+    const cy = ROW_HEIGHT / 2;
+    const size = Math.min(width, ROW_HEIGHT) * 0.7;
+
+    ctx.beginPath();
+    switch (shape) {
+      case 'circle':
+        ctx.arc(cx, cy, size / 2, 0, Math.PI * 2);
+        break;
+      case 'square':
+        ctx.rect(cx - size / 2, cy - size / 2, size, size);
+        break;
+      case 'rectangle':
+        ctx.rect(cx - size * 0.65, cy - size * 0.4, size * 1.3, size * 0.8);
+        break;
+      case 'triangle':
+        ctx.moveTo(cx, cy - size / 2);
+        ctx.lineTo(cx + size / 2, cy + size / 2);
+        ctx.lineTo(cx - size / 2, cy + size / 2);
+        ctx.closePath();
+        break;
+      case 'star': {
+        const outerR = size / 2;
+        const innerR = outerR * 0.4;
+        for (let i = 0; i < 10; i++) {
+          const angle = (Math.PI / 5) * i - Math.PI / 2;
+          const r = i % 2 === 0 ? outerR : innerR;
+          const x = cx + r * Math.cos(angle);
+          const y = cy + r * Math.sin(angle);
+          if (i === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        break;
+      }
+    }
+    ctx.stroke();
+  }
+
   private drawGuide(): void {
     const width = this.container().nativeElement.clientWidth;
     if (width === 0) return;
@@ -149,6 +198,19 @@ export class TraceLine {
 
     const ctx = this.sizeCanvas(guide.nativeElement, width, ROW_HEIGHT);
     ctx.clearRect(0, 0, width, ROW_HEIGHT);
+
+    const shape = this.shape();
+    if (shape) {
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 3;
+      ctx.setLineDash([8, 8]);
+      this.strokeGuideShape(ctx, shape, width);
+
+      const draw = (c: CanvasRenderingContext2D) => this.strokeGuideShape(c, shape, width);
+      this.targetMask = this.strokeMask(this.targetCanvas, width, TARGET_TOLERANCE_WIDTH, draw);
+      this.coverageMask = this.strokeMask(this.coverageCanvas, width, COVERAGE_PATH_WIDTH, draw);
+      return;
+    }
 
     const baselineY = ROW_HEIGHT * BASELINE_RATIO;
     const font = this.currentFont();
@@ -196,18 +258,19 @@ export class TraceLine {
       document.fonts.load(font.fontSpec).then(() => this.drawGuide());
     }
 
-    this.targetMask = this.strokeMask(this.targetCanvas, width, baselineY, font, TARGET_TOLERANCE_WIDTH);
-    this.coverageMask = this.strokeMask(this.coverageCanvas, width, baselineY, font, COVERAGE_PATH_WIDTH);
+    const drawText = (c: CanvasRenderingContext2D) => this.strokeGuideText(c, baselineY, font);
+    this.targetMask = this.strokeMask(this.targetCanvas, width, TARGET_TOLERANCE_WIDTH, drawText);
+    this.coverageMask = this.strokeMask(this.coverageCanvas, width, COVERAGE_PATH_WIDTH, drawText);
   }
 
-  // Renders the guide text off-screen with a thick solid stroke of the
-  // given width, and returns the resulting pixel data for hit-testing.
+  // Renders the guide (text or shape, via `draw`) off-screen with a thick
+  // solid stroke of the given width, and returns the resulting pixel data
+  // for hit-testing.
   private strokeMask(
     canvas: HTMLCanvasElement,
     width: number,
-    baselineY: number,
-    font: GuideFont,
     lineWidth: number,
+    draw: (ctx: CanvasRenderingContext2D) => void,
   ): ImageData {
     const ctx = this.sizeCanvas(canvas, width, ROW_HEIGHT);
     ctx.clearRect(0, 0, width, ROW_HEIGHT);
@@ -215,7 +278,7 @@ export class TraceLine {
     ctx.lineJoin = 'round';
     ctx.lineCap = 'round';
     ctx.setLineDash([]);
-    this.strokeGuideText(ctx, baselineY, font);
+    draw(ctx);
     return ctx.getImageData(0, 0, canvas.width, canvas.height);
   }
 
@@ -324,6 +387,6 @@ export class TraceLine {
     const coverage = targetPixels === 0 ? 0 : Math.round((coveredPixels / targetPixels) * 100);
     if (coverage >= 80) return `Great tracing! ${coverage}% traced.`;
     if (coverage >= 50) return `Good try - ${coverage}% traced. Fill in the gaps!`;
-    return `${coverage}% traced - trace over the dashed letters.`;
+    return `${coverage}% traced - trace over the dashed lines.`;
   }
 }
