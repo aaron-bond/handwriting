@@ -12,7 +12,7 @@
   margin-bottom: 24px;
 }
 
-.controls input {
+.controls input[type='text'] {
   font-size: 18px;
   padding: 6px 10px;
 }
@@ -20,4 +20,11 @@
 .controls button {
   font-size: 16px;
   padding: 6px 14px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 16px;
 }

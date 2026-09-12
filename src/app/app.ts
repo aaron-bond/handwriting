@@ -9,6 +9,7 @@ import { TraceLine } from './trace-line/trace-line';
 })
 export class App {
   protected readonly word = signal('hello');
+  protected readonly cursive = signal(false);
 
   private readonly traceLine = viewChild.required(TraceLine);
 

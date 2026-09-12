@@ -14,6 +14,12 @@ import {
 const ROW_HEIGHT = 220;
 const BASELINE_RATIO = 0.7; // where the text baseline sits within the row
 
+const PRINT_FONT = '"Comic Sans MS", sans-serif';
+const CURSIVE_FONT = '"Dancing Script", cursive';
+// Dancing Script's x-height is much smaller relative to its em box than
+// Comic Sans's, so it needs a size boost to read at a comparable scale.
+const CURSIVE_SIZE_MULTIPLIER = 1.4;
+
 @Component({
   selector: 'app-trace-line',
   imports: [],
@@ -23,6 +29,7 @@ const BASELINE_RATIO = 0.7; // where the text baseline sits within the row
 export class TraceLine {
   readonly text = input.required<string>();
   readonly fontSize = input(120);
+  readonly cursive = input(false);
 
   private readonly container = viewChild.required<ElementRef<HTMLDivElement>>('container');
   private readonly guideCanvas = viewChild.required<ElementRef<HTMLCanvasElement>>('guide');
@@ -48,6 +55,7 @@ export class TraceLine {
     effect(() => {
       this.text();
       this.fontSize();
+      this.cursive();
       this.drawGuide();
     });
   }
@@ -90,12 +98,24 @@ export class TraceLine {
     ctx.stroke();
 
     // Dashed guide text to trace over.
-    ctx.font = `${this.fontSize()}px "Comic Sans MS", cursive, sans-serif`;
+    const isCursive = this.cursive();
+    const fontFamily = isCursive ? CURSIVE_FONT : PRINT_FONT;
+    const size = isCursive ? this.fontSize() * CURSIVE_SIZE_MULTIPLIER : this.fontSize();
+    const fontSpec = `${size}px ${fontFamily}`;
+    ctx.font = fontSpec;
     ctx.textBaseline = 'alphabetic';
     ctx.strokeStyle = '#94a3b8';
     ctx.lineWidth = 2;
     ctx.setLineDash([6, 6]);
+    ctx.letterSpacing = isCursive ? '4px' : '0px';
     ctx.strokeText(this.text(), 24, baselineY);
+
+    // Unlike DOM text, drawing to a canvas never triggers the browser to
+    // fetch a @font-face - it just silently falls back. Kick the load off
+    // explicitly and redraw once the real glyphs are available.
+    if (this.cursive() && !document.fonts.check(fontSpec)) {
+      document.fonts.load(fontSpec).then(() => this.drawGuide());
+    }
   }
 
   private inkContext(): CanvasRenderingContext2D {
