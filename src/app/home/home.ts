@@ -16,4 +16,8 @@ export class Home {
   itemLabel(workbook: Workbook): string {
     return workbook.items[0]?.kind === 'shape' ? 'shapes' : 'words';
   }
+
+  icon(workbook: Workbook): string {
+    return workbook.items[0]?.kind === 'shape' ? '🔷' : '📝';
+  }
 }

@@ -1,33 +1,45 @@
 .tiles {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 20px;
 }
 
 .tile {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  min-width: 160px;
-  padding: 20px;
-  border: 2px solid #94a3b8;
-  border-radius: 12px;
-  background: #fff;
+  align-items: flex-start;
+  gap: 8px;
+  min-width: 180px;
+  padding: 24px;
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-soft);
   font-family: inherit;
   text-align: left;
   cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .tile:hover {
-  border-color: #1d4ed8;
+  transform: translateY(-4px);
+  box-shadow: 0 10px 22px rgba(77, 171, 247, 0.28);
+}
+
+.tile-icon {
+  font-size: 32px;
+  line-height: 1;
 }
 
 .tile-title {
-  font-size: 20px;
+  font-family: var(--font-heading);
+  font-size: 22px;
   font-weight: 600;
+  color: var(--color-primary-dark);
 }
 
 .tile-meta {
   font-size: 14px;
-  color: #64748b;
+  font-weight: 700;
+  color: var(--color-text-muted);
 }

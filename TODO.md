@@ -34,3 +34,9 @@
       Think rounded shapes, a warm/playful colour palette, friendlier
       typography for the UI chrome (not the tracing guide fonts
       themselves), bigger touch-friendly tap targets for tablet use.
+      First pass done: pastel-blue palette + Fredoka/Nunito fonts as
+      shared tokens in `styles.css`, applied to the home screen (rounded
+      shadowed cards, icons, hover lift) and shared controls (pill
+      buttons) used everywhere else. Still to revisit: the practice
+      screens' layout/spacing beyond just the shared buttons, and the
+      tracing canvas area itself (currently plain white/transparent).
