@@ -88,6 +88,20 @@ export class TraceLine {
 
     const baselineY = ROW_HEIGHT * BASELINE_RATIO;
 
+    // Set the font before measuring, so the x-height (and hence the midline)
+    // reflects the font actually in use rather than a guessed ratio.
+    const isCursive = this.cursive();
+    const fontFamily = isCursive ? CURSIVE_FONT : PRINT_FONT;
+    const size = isCursive ? this.fontSize() * CURSIVE_SIZE_MULTIPLIER : this.fontSize();
+    const fontSpec = `${size}px ${fontFamily}`;
+    ctx.font = fontSpec;
+    ctx.textBaseline = 'alphabetic';
+
+    // "x" is a lowercase letter with no ascender/descender, so its own
+    // bounding-box ascent is a direct measurement of this font's x-height.
+    const xHeight = ctx.measureText('x').actualBoundingBoxAscent;
+    const midlineY = baselineY - xHeight;
+
     // Baseline rule, for orientation.
     ctx.strokeStyle = '#94a3b8';
     ctx.lineWidth = 2;
@@ -97,13 +111,17 @@ export class TraceLine {
     ctx.lineTo(width, baselineY);
     ctx.stroke();
 
+    // Mid-height (x-height) guide line, marking where lowercase letters
+    // without ascenders should top out.
+    ctx.strokeStyle = '#cbd5e1';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 4]);
+    ctx.beginPath();
+    ctx.moveTo(0, midlineY);
+    ctx.lineTo(width, midlineY);
+    ctx.stroke();
+
     // Dashed guide text to trace over.
-    const isCursive = this.cursive();
-    const fontFamily = isCursive ? CURSIVE_FONT : PRINT_FONT;
-    const size = isCursive ? this.fontSize() * CURSIVE_SIZE_MULTIPLIER : this.fontSize();
-    const fontSpec = `${size}px ${fontFamily}`;
-    ctx.font = fontSpec;
-    ctx.textBaseline = 'alphabetic';
     ctx.strokeStyle = '#94a3b8';
     ctx.lineWidth = 2;
     ctx.setLineDash([6, 6]);
@@ -113,7 +131,7 @@ export class TraceLine {
     // Unlike DOM text, drawing to a canvas never triggers the browser to
     // fetch a @font-face - it just silently falls back. Kick the load off
     // explicitly and redraw once the real glyphs are available.
-    if (this.cursive() && !document.fonts.check(fontSpec)) {
+    if (isCursive && !document.fonts.check(fontSpec)) {
       document.fonts.load(fontSpec).then(() => this.drawGuide());
     }
   }
