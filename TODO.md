@@ -65,7 +65,7 @@
 
 ## Visual design
 
-- [ ] Give the app a soft, child-friendly aesthetic — it's currently
+- [x] Give the app a soft, child-friendly aesthetic — it's currently
       plain/functional (system-ui font, basic borders, flat buttons).
       Think rounded shapes, a warm/playful colour palette, friendlier
       typography for the UI chrome (not the tracing guide fonts
@@ -85,6 +85,8 @@
       every screen. TraceLine's tracing result is `{ coverage, message }`
       rather than a bare string so callers can style by score tier
       without parsing the message text (see live-scoring item above).
-      Still to revisit: the practice screens' tracing canvas area itself
-      (currently plain white/transparent, no card frame like the home
-      tiles have).
+      Third pass done: the tracing canvas itself is now wrapped in a
+      white rounded card (`trace-card` in `trace-line.html`/`.css`),
+      matching the home tiles - same radius, same accent-tinted soft
+      shadow via `color-mix()`, using the workbook's `--accent` variable
+      already threaded through from the earlier colour pass.
