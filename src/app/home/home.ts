@@ -14,10 +14,12 @@ export class Home {
   readonly selectCustom = output<void>();
 
   itemLabel(workbook: Workbook): string {
+    if (workbook.id === 'alphabet') return 'letters';
     return workbook.items[0]?.kind === 'shape' ? 'shapes' : 'words';
   }
 
   icon(workbook: Workbook): string {
+    if (workbook.id === 'alphabet') return '🔤';
     return workbook.items[0]?.kind === 'shape' ? '🔷' : '📝';
   }
 }

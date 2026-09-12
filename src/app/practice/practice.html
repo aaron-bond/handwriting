@@ -2,9 +2,7 @@
   <button type="button" (click)="back.emit()">Home</button>
 
   <span class="title">{{ workbook().title }}</span>
-  <span class="progress">
-    {{ item().kind === 'shape' ? 'Shape' : 'Word' }} {{ index() + 1 }} of {{ workbook().items.length }}
-  </span>
+  <span class="progress">{{ itemLabel() }} {{ index() + 1 }} of {{ workbook().items.length }}</span>
 
   <button type="button" (click)="previous()" [disabled]="!canGoPrevious()">Previous</button>
   <button type="button" (click)="next()" [disabled]="!canGoNext()">Next</button>

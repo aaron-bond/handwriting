@@ -25,7 +25,11 @@
       TraceLine gained a `shape` input alongside `text` (drawn via Canvas
       path primitives instead of strokeText), reusing the same pixel-mask
       tracing/scoring pipeline unchanged.
-- [ ] Workbook: alphabet (A-Z, one letter at a time).
+- [x] Workbook: alphabet — upper/lowercase pairs (Aa, Bb, Cc, ... Zz)
+      rather than one bare letter at a time, so each item shows how the
+      two forms relate. Fit entirely into the existing text-item
+      architecture (each pair is just a two-character string) - no
+      TraceLine changes needed.
 - [ ] Workbook: "Doodles" (working name, open to better) — simple
       pictures rather than single geometric shapes: a smiling face,
       waves, a basic tree, etc. Likely needs TraceLine's shape support

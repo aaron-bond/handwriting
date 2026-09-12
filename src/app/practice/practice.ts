@@ -36,6 +36,11 @@ export class Practice {
     return current.kind === 'shape' ? current.value : null;
   });
 
+  protected readonly itemLabel = computed(() => {
+    if (this.item().kind === 'shape') return 'Shape';
+    return this.workbook().id === 'alphabet' ? 'Letter' : 'Word';
+  });
+
   private readonly traceLine = viewChild.required(TraceLine);
 
   constructor() {
