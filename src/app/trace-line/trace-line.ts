@@ -14,11 +14,13 @@ import {
 const ROW_HEIGHT = 220;
 const BASELINE_RATIO = 0.7; // where the text baseline sits within the row
 
-// Google's "Playwrite GB S" is built for UK handwriting instruction (not
-// just decoration) - single-story "a", simple uncomplicated letterforms
-// matching how kids are actually taught to write, unlike a system font
-// like Comic Sans (whose double-story "a" doesn't match that).
-const PRINT_FONT = '"Playwrite GB S", sans-serif';
+// "Andika" is a literacy font (designed for beginning readers) - plain,
+// single-story "a", no stylistic flourish. Playwrite GB S was tried first
+// since it's built for UK handwriting instruction specifically, but its
+// entry/exit pen strokes on every letter (each "a" trails into a tail,
+// "p"/"y" curl into loops) read as joined/cursive even though the letters
+// are technically separate - not the simple print look wanted here.
+const PRINT_FONT = '"Andika", sans-serif';
 // "Playwrite GB J" (the matching joined/cursive style) turned out to render
 // its letters disconnected in both DOM and canvas text at normal tracking -
 // tightening letter-spacing brings them closer but never actually joins the
