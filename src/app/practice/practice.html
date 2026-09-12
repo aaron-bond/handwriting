@@ -1,30 +1,39 @@
-<div class="controls">
-  <button type="button" (click)="back.emit()">Home</button>
+<div
+  class="practice"
+  [style.--accent]="workbook().color.accent"
+  [style.--accent-dark]="workbook().color.accentDark"
+  [style.--accent-soft]="workbook().color.accentSoft"
+>
+  <div class="controls">
+    <button type="button" (click)="back.emit()">🏠 Home</button>
 
-  <span class="title">{{ workbook().title }}</span>
-  <span class="progress">{{ itemLabel() }} {{ index() + 1 }} of {{ workbook().items.length }}</span>
+    <span class="title">{{ workbook().title }}</span>
+    <span class="progress">{{ itemLabel() }} {{ index() + 1 }} of {{ workbook().items.length }}</span>
 
-  <button type="button" (click)="previous()" [disabled]="!canGoPrevious()">Previous</button>
-  <button type="button" (click)="next()" [disabled]="!canGoNext()">Next</button>
+    <button type="button" (click)="previous()" [disabled]="!canGoPrevious()">◀ Previous</button>
+    <button type="button" (click)="next()" [disabled]="!canGoNext()">Next ▶</button>
 
-  <button type="button" (click)="clear()">Clear</button>
-  <button type="button" (click)="check()">Check</button>
+    <button type="button" (click)="clear()">🧹 Clear</button>
+    <button type="button" (click)="check()">✅ Check</button>
 
-  @if (item().kind === 'text') {
-    <label for="practice-cursive" class="checkbox-label">
-      <input
-        id="practice-cursive"
-        type="checkbox"
-        [checked]="cursive()"
-        (change)="cursiveChange.emit($any($event.target).checked)"
-      />
-      Cursive
-    </label>
+    @if (item().kind === 'text') {
+      <label for="practice-cursive" class="checkbox-label">
+        <input
+          id="practice-cursive"
+          type="checkbox"
+          [checked]="cursive()"
+          (change)="cursiveChange.emit($any($event.target).checked)"
+        />
+        Cursive
+      </label>
+    }
+  </div>
+
+  <app-trace-line [text]="textValue()" [shape]="shapeValue()" [cursive]="cursive()" />
+
+  @if (feedback(); as result) {
+    <p class="feedback" [class.feedback--celebrate]="result.coverage >= 80">
+      {{ result.coverage >= 80 ? '🎉 ' : '' }}{{ result.message }}
+    </p>
   }
 </div>
-
-<app-trace-line [text]="textValue()" [shape]="shapeValue()" [cursive]="cursive()" />
-
-@if (feedback(); as message) {
-  <p class="feedback">{{ message }}</p>
-}

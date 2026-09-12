@@ -1,8 +1,8 @@
 import { Component, effect, signal, viewChild } from '@angular/core';
 import { Home } from './home/home';
 import { Practice } from './practice/practice';
-import { TraceLine } from './trace-line/trace-line';
-import { Workbook } from './workbook';
+import { TraceLine, TracingResult } from './trace-line/trace-line';
+import { CUSTOM_COLOR, Workbook } from './workbook';
 
 type Screen = 'home' | 'custom' | 'workbook';
 
@@ -24,7 +24,8 @@ export class App {
 
   // State for the 'custom' screen only.
   protected readonly word = signal('hello');
-  protected readonly feedback = signal<string | null>(null);
+  protected readonly feedback = signal<TracingResult | null>(null);
+  protected readonly customColor = CUSTOM_COLOR;
 
   private readonly traceLine = viewChild(TraceLine);
 

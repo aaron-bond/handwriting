@@ -67,6 +67,18 @@
       First pass done: pastel-blue palette + Fredoka/Nunito fonts as
       shared tokens in `styles.css`, applied to the home screen (rounded
       shadowed cards, icons, hover lift) and shared controls (pill
-      buttons) used everywhere else. Still to revisit: the practice
-      screens' layout/spacing beyond just the shared buttons, and the
-      tracing canvas area itself (currently plain white/transparent).
+      buttons) used everywhere else.
+      Second pass done: per-workbook accent colours (each `Workbook` has
+      a `color` - accent/accentDark/accentSoft - bound as CSS custom
+      properties on its tile and practice screen, so the shared button/
+      input/feedback styles pick it up automatically via
+      `var(--accent, var(--color-primary))` fallbacks); colour-matched
+      icon badges on home tiles; button icons (🏠◀▶🧹✅) on every
+      Home/Clear/Check/Previous/Next button; a celebratory pop-in pill
+      (🎉 + bounce animation) when Check scores ≥80%; and soft blurred
+      background blobs behind every screen. `TraceLine.checkTracing()`
+      now returns `{ coverage, message }` instead of a bare string so
+      callers can style by score tier without parsing the message text.
+      Still to revisit: the practice screens' tracing canvas area itself
+      (currently plain white/transparent, no card frame like the home
+      tiles have).

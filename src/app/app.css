@@ -1,4 +1,6 @@
 .page {
+  position: relative;
+  z-index: 1;
   max-width: 900px;
   margin: 0 auto;
   padding: 32px 24px;
@@ -9,4 +11,46 @@ h1 {
   font-weight: 700;
   color: var(--color-primary-dark);
   margin: 0 0 24px;
+}
+
+/* Soft, blurred colour blobs fixed behind every screen - decorative only,
+   kept subtle enough not to compete with the tracing guides. */
+.background-decoration {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.35;
+}
+
+.blob-blue {
+  top: -120px;
+  right: -100px;
+  width: 360px;
+  height: 360px;
+  background: var(--color-primary);
+}
+
+.blob-purple {
+  bottom: -140px;
+  left: -120px;
+  width: 380px;
+  height: 380px;
+  background: #9775fa;
+}
+
+.blob-orange {
+  bottom: 10%;
+  right: 8%;
+  width: 220px;
+  height: 220px;
+  background: #ff922b;
+  opacity: 0.2;
 }

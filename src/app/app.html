@@ -1,3 +1,9 @@
+<div class="background-decoration" aria-hidden="true">
+  <div class="blob blob-blue"></div>
+  <div class="blob blob-purple"></div>
+  <div class="blob blob-orange"></div>
+</div>
+
 <main class="page">
   <h1>Handwriting Practice</h1>
 
@@ -7,35 +13,43 @@
     }
 
     @case ('custom') {
-      <div class="controls">
-        <button type="button" (click)="goHome()">Home</button>
+      <div
+        [style.--accent]="customColor.accent"
+        [style.--accent-dark]="customColor.accentDark"
+        [style.--accent-soft]="customColor.accentSoft"
+      >
+        <div class="controls">
+          <button type="button" (click)="goHome()">🏠 Home</button>
 
-        <label for="word">Word to trace</label>
-        <input
-          id="word"
-          type="text"
-          [value]="word()"
-          (input)="word.set($any($event.target).value)"
-        />
-        <button type="button" (click)="clear()">Clear</button>
-        <button type="button" (click)="check()">Check</button>
-
-        <label for="cursive" class="checkbox-label">
+          <label for="word">Word to trace</label>
           <input
-            id="cursive"
-            type="checkbox"
-            [checked]="cursive()"
-            (change)="cursive.set($any($event.target).checked)"
+            id="word"
+            type="text"
+            [value]="word()"
+            (input)="word.set($any($event.target).value)"
           />
-          Cursive
-        </label>
+          <button type="button" (click)="clear()">🧹 Clear</button>
+          <button type="button" (click)="check()">✅ Check</button>
+
+          <label for="cursive" class="checkbox-label">
+            <input
+              id="cursive"
+              type="checkbox"
+              [checked]="cursive()"
+              (change)="cursive.set($any($event.target).checked)"
+            />
+            Cursive
+          </label>
+        </div>
+
+        <app-trace-line [text]="word()" [cursive]="cursive()" />
+
+        @if (feedback(); as result) {
+          <p class="feedback" [class.feedback--celebrate]="result.coverage >= 80">
+            {{ result.coverage >= 80 ? '🎉 ' : '' }}{{ result.message }}
+          </p>
+        }
       </div>
-
-      <app-trace-line [text]="word()" [cursive]="cursive()" />
-
-      @if (feedback(); as message) {
-        <p class="feedback">{{ message }}</p>
-      }
     }
 
     @case ('workbook') {

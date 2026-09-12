@@ -61,6 +61,11 @@ interface GuideFont {
 
 export type ShapeKind = 'circle' | 'square' | 'triangle' | 'rectangle' | 'star';
 
+export interface TracingResult {
+  coverage: number;
+  message: string;
+}
+
 @Component({
   selector: 'app-trace-line',
   imports: [],
@@ -365,9 +370,9 @@ export class TraceLine {
 
   // Scans the (narrow) coverage mask against the accumulated ink and
   // reports what fraction of the guide letters actually got traced over.
-  checkTracing(): string {
+  checkTracing(): TracingResult {
     const mask = this.coverageMask;
-    if (!mask) return "Couldn't check yet - try again.";
+    if (!mask) return { coverage: 0, message: "Couldn't check yet - try again." };
 
     const inkCanvas = this.inkCanvas().nativeElement;
     const ink = this.inkContext().getImageData(0, 0, inkCanvas.width, inkCanvas.height);
@@ -385,8 +390,8 @@ export class TraceLine {
     }
 
     const coverage = targetPixels === 0 ? 0 : Math.round((coveredPixels / targetPixels) * 100);
-    if (coverage >= 80) return `Great tracing! ${coverage}% traced.`;
-    if (coverage >= 50) return `Good try - ${coverage}% traced. Fill in the gaps!`;
-    return `${coverage}% traced - trace over the dashed lines.`;
+    if (coverage >= 80) return { coverage, message: `Great tracing! ${coverage}% traced.` };
+    if (coverage >= 50) return { coverage, message: `Good try - ${coverage}% traced. Fill in the gaps!` };
+    return { coverage, message: `${coverage}% traced - trace over the dashed lines.` };
   }
 }

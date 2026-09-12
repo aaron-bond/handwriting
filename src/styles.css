@@ -54,7 +54,7 @@ h3 {
 
 .controls input[type='text']:focus {
   outline: none;
-  border-color: var(--color-primary);
+  border-color: var(--accent, var(--color-primary));
 }
 
 .controls button {
@@ -64,14 +64,17 @@ h3 {
   padding: 10px 18px;
   border: none;
   border-radius: var(--radius-md);
-  background: var(--color-primary);
+  /* Falls back to the base blue where no --accent is set (e.g. Home has
+     no buttons of its own); a workbook screen sets --accent on its root
+     so every button here picks up that workbook's colour automatically. */
+  background: var(--accent, var(--color-primary));
   color: #fff;
   cursor: pointer;
   transition: background-color 0.15s ease, transform 0.15s ease;
 }
 
 .controls button:hover:not(:disabled) {
-  background: var(--color-primary-dark);
+  background: var(--accent-dark, var(--color-primary-dark));
   transform: translateY(-1px);
 }
 
@@ -89,8 +92,42 @@ h3 {
 }
 
 .feedback {
+  display: inline-block;
   font-size: 18px;
   font-weight: 800;
   margin-top: 16px;
-  color: var(--color-primary-dark);
+  color: var(--accent-dark, var(--color-primary-dark));
+  animation: pop-in 0.25s ease;
+}
+
+.feedback--celebrate {
+  padding: 8px 18px;
+  border-radius: var(--radius-md);
+  background: var(--accent-soft, var(--color-primary-soft));
+  animation: celebrate-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes celebrate-in {
+  0% {
+    opacity: 0;
+    transform: scale(0.7) rotate(-2deg);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.08) rotate(1deg);
+  }
+  100% {
+    transform: scale(1) rotate(0);
+  }
 }

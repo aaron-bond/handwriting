@@ -17,6 +17,7 @@ describe('Practice', () => {
       title: 'Test',
       icon: '📝',
       itemLabel: 'words',
+      color: { accent: '#4dabf7', accentDark: '#1c7ed6', accentSoft: '#d0ebff' },
       items: [{ kind: 'text', value: 'hello' }],
     });
     fixture.componentRef.setInput('cursive', false);

@@ -1,5 +1,5 @@
 import { Component, output } from '@angular/core';
-import { WORKBOOKS, Workbook } from '../workbook';
+import { CUSTOM_COLOR, WORKBOOKS, Workbook } from '../workbook';
 
 @Component({
   selector: 'app-home',
@@ -9,6 +9,7 @@ import { WORKBOOKS, Workbook } from '../workbook';
 })
 export class Home {
   readonly workbooks = WORKBOOKS;
+  readonly customColor = CUSTOM_COLOR;
 
   readonly selectWorkbook = output<Workbook>();
   readonly selectCustom = output<void>();

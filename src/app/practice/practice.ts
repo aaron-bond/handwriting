@@ -1,5 +1,5 @@
 import { Component, computed, effect, input, output, signal, viewChild } from '@angular/core';
-import { ShapeKind, TraceLine } from '../trace-line/trace-line';
+import { ShapeKind, TraceLine, TracingResult } from '../trace-line/trace-line';
 import { Workbook } from '../workbook';
 
 @Component({
@@ -16,7 +16,7 @@ export class Practice {
   readonly back = output<void>();
 
   protected readonly index = signal(0);
-  protected readonly feedback = signal<string | null>(null);
+  protected readonly feedback = signal<TracingResult | null>(null);
 
   protected readonly item = computed(() => this.workbook().items[this.index()]);
   protected readonly canGoPrevious = computed(() => this.index() > 0);
