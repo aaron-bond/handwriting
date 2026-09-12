@@ -26,6 +26,12 @@
       path primitives instead of strokeText), reusing the same pixel-mask
       tracing/scoring pipeline unchanged.
 - [ ] Workbook: alphabet (A-Z, one letter at a time).
+- [ ] Workbook: "Doodles" (working name, open to better) — simple
+      pictures rather than single geometric shapes: a smiling face,
+      waves, a basic tree, etc. Likely needs TraceLine's shape support
+      extended from one path primitive to a small composed drawing (e.g.
+      face = circle + two dot eyes + curved smile) rather than a single
+      `ShapeKind`.
 
 ## Visual design
 
