@@ -15,6 +15,8 @@ describe('Practice', () => {
     fixture.componentRef.setInput('workbook', {
       id: 'test',
       title: 'Test',
+      icon: '📝',
+      itemLabel: 'words',
       items: [{ kind: 'text', value: 'hello' }],
     });
     fixture.componentRef.setInput('cursive', false);

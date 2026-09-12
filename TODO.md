@@ -20,7 +20,11 @@
       word. Also kept the old free-text entry as a "Custom Word" tile.
 - [x] Workbook: everyday words (colours, household objects, etc.) — 10
       words, with Next/Previous navigation and progress ("Word X of Y").
-- [ ] Workbook: maths (simple equations, e.g. "1 + 1 = 2").
+- [x] Workbook: maths — 10 basic sums (addition and subtraction, e.g.
+      "1 + 1 = 2", "5 - 2 = 3"), spaced out so each symbol traces cleanly
+      on its own. Also generalized workbook metadata: `icon`/`itemLabel`
+      now live on each `Workbook` entry instead of Home/Practice
+      special-casing `workbook.id` per new workbook.
 - [x] Workbook: shapes — circle, square, triangle, rectangle, star.
       TraceLine gained a `shape` input alongside `text` (drawn via Canvas
       path primitives instead of strokeText), reusing the same pixel-mask

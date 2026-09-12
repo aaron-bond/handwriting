@@ -36,9 +36,12 @@ export class Practice {
     return current.kind === 'shape' ? current.value : null;
   });
 
+  // Singularized, capitalized form of the workbook's plural itemLabel
+  // ("words" -> "Word") for the "Word X of Y" progress line.
   protected readonly itemLabel = computed(() => {
-    if (this.item().kind === 'shape') return 'Shape';
-    return this.workbook().id === 'alphabet' ? 'Letter' : 'Word';
+    const plural = this.workbook().itemLabel;
+    const singular = plural.replace(/s$/, '');
+    return singular.charAt(0).toUpperCase() + singular.slice(1);
   });
 
   private readonly traceLine = viewChild.required(TraceLine);
