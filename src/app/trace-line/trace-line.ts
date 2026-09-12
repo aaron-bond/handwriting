@@ -1,0 +1,150 @@
+import {
+  Component,
+  DestroyRef,
+  ElementRef,
+  afterNextRender,
+  effect,
+  inject,
+  input,
+  viewChild,
+} from '@angular/core';
+
+// Fixed height for the practice row; width tracks the container so the
+// canvases can be reflowed (and redrawn crisply) on resize/orientation change.
+const ROW_HEIGHT = 220;
+const BASELINE_RATIO = 0.7; // where the text baseline sits within the row
+
+@Component({
+  selector: 'app-trace-line',
+  imports: [],
+  templateUrl: './trace-line.html',
+  styleUrl: './trace-line.css',
+})
+export class TraceLine {
+  readonly text = input.required<string>();
+  readonly fontSize = input(120);
+
+  private readonly container = viewChild.required<ElementRef<HTMLDivElement>>('container');
+  private readonly guideCanvas = viewChild.required<ElementRef<HTMLCanvasElement>>('guide');
+  private readonly inkCanvas = viewChild.required<ElementRef<HTMLCanvasElement>>('ink');
+
+  private resizeObserver?: ResizeObserver;
+  private drawing = false;
+  private lastX = 0;
+  private lastY = 0;
+
+  constructor() {
+    // Canvas backing size depends on the container's rendered width, which
+    // isn't known until after the first render.
+    afterNextRender(() => {
+      const container = this.container().nativeElement;
+      this.resizeObserver = new ResizeObserver(() => this.drawGuide());
+      this.resizeObserver.observe(container);
+      this.drawGuide();
+    });
+
+    inject(DestroyRef).onDestroy(() => this.resizeObserver?.disconnect());
+
+    effect(() => {
+      this.text();
+      this.fontSize();
+      this.drawGuide();
+    });
+  }
+
+  private sizeCanvas(canvas: HTMLCanvasElement, width: number, height: number): CanvasRenderingContext2D {
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    const ctx = canvas.getContext('2d')!;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    return ctx;
+  }
+
+  private drawGuide(): void {
+    const width = this.container().nativeElement.clientWidth;
+    if (width === 0) return;
+
+    const guide = this.guideCanvas();
+    const ink = this.inkCanvas();
+
+    // Keep the ink canvas's backing store in sync with the guide canvas so
+    // strokes stay aligned after a resize (this clears in-progress ink,
+    // which is an acceptable trade-off for a resize/orientation change).
+    this.sizeCanvas(ink.nativeElement, width, ROW_HEIGHT);
+
+    const ctx = this.sizeCanvas(guide.nativeElement, width, ROW_HEIGHT);
+    ctx.clearRect(0, 0, width, ROW_HEIGHT);
+
+    const baselineY = ROW_HEIGHT * BASELINE_RATIO;
+
+    // Baseline rule, for orientation.
+    ctx.strokeStyle = '#94a3b8';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([]);
+    ctx.beginPath();
+    ctx.moveTo(0, baselineY);
+    ctx.lineTo(width, baselineY);
+    ctx.stroke();
+
+    // Dashed guide text to trace over.
+    ctx.font = `${this.fontSize()}px "Comic Sans MS", cursive, sans-serif`;
+    ctx.textBaseline = 'alphabetic';
+    ctx.strokeStyle = '#94a3b8';
+    ctx.lineWidth = 2;
+    ctx.setLineDash([6, 6]);
+    ctx.strokeText(this.text(), 24, baselineY);
+  }
+
+  private inkContext(): CanvasRenderingContext2D {
+    return this.inkCanvas().nativeElement.getContext('2d')!;
+  }
+
+  private pointerPosition(event: PointerEvent): { x: number; y: number } {
+    const rect = this.inkCanvas().nativeElement.getBoundingClientRect();
+    return { x: event.clientX - rect.left, y: event.clientY - rect.top };
+  }
+
+  onPointerDown(event: PointerEvent): void {
+    event.preventDefault();
+    this.inkCanvas().nativeElement.setPointerCapture(event.pointerId);
+    this.drawing = true;
+    const { x, y } = this.pointerPosition(event);
+    this.lastX = x;
+    this.lastY = y;
+  }
+
+  onPointerMove(event: PointerEvent): void {
+    if (!this.drawing) return;
+    event.preventDefault();
+    const { x, y } = this.pointerPosition(event);
+    const ctx = this.inkContext();
+
+    const isPen = event.pointerType === 'pen';
+    const width = isPen ? Math.max(1.5, event.pressure * 8) : 4;
+
+    ctx.strokeStyle = '#1d4ed8';
+    ctx.lineWidth = width;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.beginPath();
+    ctx.moveTo(this.lastX, this.lastY);
+    ctx.lineTo(x, y);
+    ctx.stroke();
+
+    this.lastX = x;
+    this.lastY = y;
+  }
+
+  onPointerUp(event: PointerEvent): void {
+    this.drawing = false;
+    this.inkCanvas().nativeElement.releasePointerCapture(event.pointerId);
+  }
+
+  clear(): void {
+    const canvas = this.inkCanvas().nativeElement;
+    this.inkContext().clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+  }
+}

@@ -1,0 +1,11 @@
+<div class="trace-line" #container>
+  <canvas #guide class="guide"></canvas>
+  <canvas
+    #ink
+    class="ink"
+    (pointerdown)="onPointerDown($event)"
+    (pointermove)="onPointerMove($event)"
+    (pointerup)="onPointerUp($event)"
+    (pointercancel)="onPointerUp($event)"
+  ></canvas>
+</div>

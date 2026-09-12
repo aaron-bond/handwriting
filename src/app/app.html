@@ -1,0 +1,16 @@
+<main class="page">
+  <h1>Handwriting Practice</h1>
+
+  <div class="controls">
+    <label for="word">Word to trace</label>
+    <input
+      id="word"
+      type="text"
+      [value]="word()"
+      (input)="word.set($any($event.target).value)"
+    />
+    <button type="button" (click)="clear()">Clear</button>
+  </div>
+
+  <app-trace-line [text]="word()" />
+</main>

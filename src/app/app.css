@@ -1,0 +1,23 @@
+.page {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px;
+  font-family: system-ui, sans-serif;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.controls input {
+  font-size: 18px;
+  padding: 6px 10px;
+}
+
+.controls button {
+  font-size: 16px;
+  padding: 6px 14px;
+}
