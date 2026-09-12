@@ -13,6 +13,13 @@
       even with separate letters, which wasn't the plain-print look
       wanted. Cursive is still Dancing Script (decorative) — the matching
       Playwrite GB J style doesn't actually render its letters joined.
+- [ ] Make the % score live instead of needing a Check button - fewer
+      buttons on screen is better for kids. `checkTracing()` already
+      just scans the accumulated ink against the coverage mask, so it
+      could re-run continuously (debounced, e.g. on pointerup / a short
+      idle timer rather than every pointermove - it's not free, it walks
+      the ink+mask pixel buffers) and update the feedback text/celebration
+      automatically as they draw, with Check removed. Clear would stay.
 
 ## Content / workbooks
 
