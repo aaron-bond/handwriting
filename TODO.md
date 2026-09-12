@@ -26,3 +26,11 @@
       path primitives instead of strokeText), reusing the same pixel-mask
       tracing/scoring pipeline unchanged.
 - [ ] Workbook: alphabet (A-Z, one letter at a time).
+
+## Visual design
+
+- [ ] Give the app a soft, child-friendly aesthetic — it's currently
+      plain/functional (system-ui font, basic borders, flat buttons).
+      Think rounded shapes, a warm/playful colour palette, friendlier
+      typography for the UI chrome (not the tracing guide fonts
+      themselves), bigger touch-friendly tap targets for tablet use.
