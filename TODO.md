@@ -4,8 +4,10 @@
 
 - [ ] Capture and score the child's strokes against the guide letters, to
       tell whether a letter was traced accurately.
-- [ ] Simpler, more child-friendly fonts — the current print (Comic Sans)
-      and cursive (Dancing Script) options look more complex than intended.
+- [x] Simpler, more child-friendly fonts — print now uses Playwrite GB S
+      (single-story "a", built for handwriting instruction). Cursive is
+      still Dancing Script (decorative) — the matching Playwrite GB J
+      style doesn't actually render its letters joined, print or canvas.
 
 ## Content / workbooks
 
