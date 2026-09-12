@@ -40,12 +40,11 @@
       two forms relate. Fit entirely into the existing text-item
       architecture (each pair is just a two-character string) - no
       TraceLine changes needed.
-- [ ] Workbook: "Doodles" (working name, open to better) — simple
-      pictures rather than single geometric shapes: a smiling face,
-      waves, a basic tree, etc. Likely needs TraceLine's shape support
-      extended from one path primitive to a small composed drawing (e.g.
-      face = circle + two dot eyes + curved smile) rather than a single
-      `ShapeKind`.
+- [x] Workbook: "Doodles" — face, sun, tree, house, waves. Turned out not
+      to need any new architecture: each is still just a `ShapeKind`
+      (extended `strokeGuideShape()` to stroke a handful of independent
+      pieces - circle + eyes + smile for `face`, etc. - instead of one),
+      so it reuses Shapes' rendering/scoring pipeline completely unchanged.
 
 ## Other activity ideas
 

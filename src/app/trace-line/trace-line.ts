@@ -60,7 +60,17 @@ interface GuideFont {
   isCursive: boolean;
 }
 
-export type ShapeKind = 'circle' | 'square' | 'triangle' | 'rectangle' | 'star';
+export type ShapeKind =
+  | 'circle'
+  | 'square'
+  | 'triangle'
+  | 'rectangle'
+  | 'star'
+  | 'face'
+  | 'sun'
+  | 'tree'
+  | 'house'
+  | 'waves';
 
 export interface TracingResult {
   coverage: number;
@@ -158,45 +168,104 @@ export class TraceLine {
 
   // Plots and strokes a shape centred in the ROW_HEIGHT box - the shape
   // equivalent of strokeGuideText, used identically for the visible guide
-  // and both hit-testing masks.
+  // and both hit-testing masks. The simple shapes are one subpath each;
+  // the doodles (face, sun, tree, house) are a handful of independently
+  // stroked pieces - stroking each piece separately (rather than one
+  // path with several disconnected subpaths) avoids needing to reason
+  // about which canvas calls implicitly draw a connecting line between
+  // pieces and which don't.
   private strokeGuideShape(ctx: CanvasRenderingContext2D, shape: ShapeKind, width: number): void {
     const cx = width / 2;
     const cy = ROW_HEIGHT / 2;
     const size = Math.min(width, ROW_HEIGHT) * 0.7;
+    const piece = (draw: () => void) => {
+      ctx.beginPath();
+      draw();
+      ctx.stroke();
+    };
 
-    ctx.beginPath();
     switch (shape) {
       case 'circle':
-        ctx.arc(cx, cy, size / 2, 0, Math.PI * 2);
+        piece(() => ctx.arc(cx, cy, size / 2, 0, Math.PI * 2));
         break;
       case 'square':
-        ctx.rect(cx - size / 2, cy - size / 2, size, size);
+        piece(() => ctx.rect(cx - size / 2, cy - size / 2, size, size));
         break;
       case 'rectangle':
-        ctx.rect(cx - size * 0.65, cy - size * 0.4, size * 1.3, size * 0.8);
+        piece(() => ctx.rect(cx - size * 0.65, cy - size * 0.4, size * 1.3, size * 0.8));
         break;
       case 'triangle':
-        ctx.moveTo(cx, cy - size / 2);
-        ctx.lineTo(cx + size / 2, cy + size / 2);
-        ctx.lineTo(cx - size / 2, cy + size / 2);
-        ctx.closePath();
+        piece(() => {
+          ctx.moveTo(cx, cy - size / 2);
+          ctx.lineTo(cx + size / 2, cy + size / 2);
+          ctx.lineTo(cx - size / 2, cy + size / 2);
+          ctx.closePath();
+        });
         break;
-      case 'star': {
-        const outerR = size / 2;
-        const innerR = outerR * 0.4;
-        for (let i = 0; i < 10; i++) {
-          const angle = (Math.PI / 5) * i - Math.PI / 2;
-          const r = i % 2 === 0 ? outerR : innerR;
-          const x = cx + r * Math.cos(angle);
-          const y = cy + r * Math.sin(angle);
-          if (i === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
+      case 'star':
+        piece(() => {
+          const outerR = size / 2;
+          const innerR = outerR * 0.4;
+          for (let i = 0; i < 10; i++) {
+            const angle = (Math.PI / 5) * i - Math.PI / 2;
+            const r = i % 2 === 0 ? outerR : innerR;
+            const x = cx + r * Math.cos(angle);
+            const y = cy + r * Math.sin(angle);
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.closePath();
+        });
+        break;
+      case 'face':
+        piece(() => ctx.arc(cx, cy, size / 2, 0, Math.PI * 2)); // head
+        piece(() => ctx.arc(cx - size * 0.18, cy - size * 0.12, size * 0.06, 0, Math.PI * 2)); // left eye
+        piece(() => ctx.arc(cx + size * 0.18, cy - size * 0.12, size * 0.06, 0, Math.PI * 2)); // right eye
+        piece(() => ctx.arc(cx, cy + size * 0.05, size * 0.28, 0.15 * Math.PI, 0.85 * Math.PI)); // smile
+        break;
+      case 'sun':
+        piece(() => ctx.arc(cx, cy, size * 0.28, 0, Math.PI * 2)); // sun
+        for (let i = 0; i < 8; i++) {
+          const angle = (Math.PI / 4) * i;
+          const r1 = size * 0.38;
+          const r2 = size * 0.5;
+          piece(() => {
+            ctx.moveTo(cx + r1 * Math.cos(angle), cy + r1 * Math.sin(angle));
+            ctx.lineTo(cx + r2 * Math.cos(angle), cy + r2 * Math.sin(angle));
+          }); // ray
         }
-        ctx.closePath();
         break;
-      }
+      case 'tree':
+        piece(() => ctx.arc(cx, cy - size * 0.15, size * 0.35, 0, Math.PI * 2)); // canopy
+        piece(() => {
+          ctx.moveTo(cx - size * 0.06, cy + size * 0.2);
+          ctx.lineTo(cx - size * 0.06, cy + size * 0.5);
+          ctx.lineTo(cx + size * 0.06, cy + size * 0.5);
+          ctx.lineTo(cx + size * 0.06, cy + size * 0.2);
+          ctx.closePath();
+        }); // trunk
+        break;
+      case 'house':
+        piece(() => ctx.rect(cx - size * 0.35, cy, size * 0.7, size * 0.35)); // walls
+        piece(() => {
+          ctx.moveTo(cx - size * 0.42, cy);
+          ctx.lineTo(cx, cy - size * 0.35);
+          ctx.lineTo(cx + size * 0.42, cy);
+          ctx.closePath();
+        }); // roof
+        break;
+      case 'waves':
+        piece(() => {
+          const startX = cx - size / 2;
+          const amplitude = size * 0.12;
+          ctx.moveTo(startX, cy);
+          for (let x = 0; x <= size; x += 4) {
+            const y = cy + Math.sin((x / size) * Math.PI * 3) * amplitude;
+            ctx.lineTo(startX + x, y);
+          }
+        });
+        break;
     }
-    ctx.stroke();
   }
 
   private drawGuide(): void {

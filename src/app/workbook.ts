@@ -86,4 +86,16 @@ export const WORKBOOKS: Workbook[] = [
       '1 - 1 = 0',
     ]),
   },
+  {
+    id: 'doodles',
+    title: 'Doodles',
+    icon: '🎨',
+    itemLabel: 'doodles',
+    color: { accent: '#22b8cf', accentDark: '#0c8599', accentSoft: '#c5f6fa' },
+    // Simple pictures rather than single geometric shapes - each one is
+    // still just a ShapeKind under the hood (a few independently stroked
+    // pieces instead of one), so it reuses Shapes' whole rendering/
+    // scoring pipeline unchanged.
+    items: shapes(['face', 'sun', 'tree', 'house', 'waves']),
+  },
 ];
