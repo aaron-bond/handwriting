@@ -10,3 +10,34 @@
   font-weight: 700;
   color: var(--color-text-muted);
 }
+
+.picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.picker-pill {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 15px;
+  padding: 8px 14px;
+  border: 2px solid var(--accent-soft);
+  border-radius: 999px;
+  background: var(--color-surface);
+  color: var(--accent-dark);
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+
+.picker-pill:hover {
+  transform: translateY(-1px);
+  border-color: var(--accent);
+}
+
+.picker-pill--active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}

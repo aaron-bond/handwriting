@@ -1,6 +1,25 @@
 import { Component, computed, input, output, signal, viewChild } from '@angular/core';
 import { ShapeKind, TraceLine } from '../trace-line/trace-line';
-import { Workbook } from '../workbook';
+import { PracticeItem, Workbook } from '../workbook';
+
+// Representative emoji per shape, used only as picker-pill labels - a
+// shape item has no short text of its own the way a word/sum does.
+// Plain geometric symbols (⚪⬜▬) render as flat monochrome glyphs in
+// most fonts rather than colour emoji, unlike these pictographic ones -
+// picked for reliably colourful rendering over exact shape fidelity
+// (there's no true colour "rectangle" emoji, hence the square stand-in).
+const SHAPE_ICONS: Record<ShapeKind, string> = {
+  circle: '🔵',
+  square: '🟦',
+  triangle: '🔺',
+  rectangle: '🟧',
+  star: '⭐',
+  face: '🙂',
+  sun: '☀️',
+  tree: '🌳',
+  house: '🏠',
+  waves: '🌊',
+};
 
 @Component({
   selector: 'app-practice',
@@ -57,7 +76,17 @@ export class Practice {
     if (this.canGoNext()) this.index.update((i) => i + 1);
   }
 
+  goTo(i: number): void {
+    this.index.set(i);
+  }
+
   clear(): void {
     this.traceLine().clear();
+  }
+
+  // Picker-pill label for an arbitrary item, not just the current one
+  // (unlike textValue/shapeValue above, which only need the current item).
+  pickerLabel(item: PracticeItem): string {
+    return item.kind === 'text' ? item.value : SHAPE_ICONS[item.value];
   }
 }

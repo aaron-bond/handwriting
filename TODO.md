@@ -19,6 +19,16 @@
       (`result`); Practice/App just read it reactively instead of holding
       their own feedback state and calling a method. Check button removed
       everywhere - Clear stays.
+- [x] Added a tappable item picker to Practice - a row of pills (one per
+      workbook item, showing its text or a representative emoji for
+      shapes/doodles) below the nav bar, so you can jump straight to any
+      item instead of only stepping sequentially. Previous/Next are now
+      bare arrow icons (◀▶, no text) since the picker is the primary
+      "where am I" UI now. Not added to the Custom Word screen - it's a
+      single free-typed word, not a list to pick from. Alphabet's 26
+      one-pair items were also regrouped into 9 items of 3 pairs each
+      ("Aa Bb Cc", ..., "Yy Zz") - the picker helps, but 26 pages of
+      near-identical content was the bigger underlying problem.
 
 ## Content / workbooks
 
@@ -39,7 +49,8 @@
       rather than one bare letter at a time, so each item shows how the
       two forms relate. Fit entirely into the existing text-item
       architecture (each pair is just a two-character string) - no
-      TraceLine changes needed.
+      TraceLine changes needed. (Later regrouped 3-per-item - see the
+      item picker entry above.)
 - [x] Workbook: "Doodles" — face, sun, tree, house, waves. Turned out not
       to need any new architecture: each is still just a `ShapeKind`
       (extended `strokeGuideShape()` to stroke a handful of independent

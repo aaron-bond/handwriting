@@ -10,8 +10,8 @@
     <span class="title">{{ workbook().title }}</span>
     <span class="progress">{{ itemLabel() }} {{ index() + 1 }} of {{ workbook().items.length }}</span>
 
-    <button type="button" (click)="previous()" [disabled]="!canGoPrevious()">◀ Previous</button>
-    <button type="button" (click)="next()" [disabled]="!canGoNext()">Next ▶</button>
+    <button type="button" (click)="previous()" [disabled]="!canGoPrevious()" aria-label="Previous">◀</button>
+    <button type="button" (click)="next()" [disabled]="!canGoNext()" aria-label="Next">▶</button>
 
     <button type="button" (click)="clear()">🧹 Clear</button>
 
@@ -25,6 +25,19 @@
         />
         Cursive
       </label>
+    }
+  </div>
+
+  <div class="picker">
+    @for (pickerItem of workbook().items; track $index) {
+      <button
+        type="button"
+        class="picker-pill"
+        [class.picker-pill--active]="$index === index()"
+        (click)="goTo($index)"
+      >
+        {{ pickerLabel(pickerItem) }}
+      </button>
     }
   </div>
 

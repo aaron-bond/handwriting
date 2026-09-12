@@ -36,6 +36,14 @@ function shapes(values: ShapeKind[]): PracticeItem[] {
   return values.map((value) => ({ kind: 'shape', value }));
 }
 
+function chunk<T>(values: T[], size: number): T[][] {
+  const chunks: T[][] = [];
+  for (let i = 0; i < values.length; i += size) {
+    chunks.push(values.slice(i, i + size));
+  }
+  return chunks;
+}
+
 const ALPHABET = 'abcdefghijklmnopqrstuvwxyz';
 
 export const WORKBOOKS: Workbook[] = [
@@ -61,9 +69,16 @@ export const WORKBOOKS: Workbook[] = [
     icon: '🔤',
     itemLabel: 'letters',
     color: { accent: '#51cf66', accentDark: '#2f9e44', accentSoft: '#d3f9d8' },
-    // Upper/lowercase pairs (Aa, Bb, Cc, ...) rather than one bare letter
-    // at a time, so each practice item shows how the two forms relate.
-    items: words([...ALPHABET].map((letter) => letter.toUpperCase() + letter)),
+    // Upper/lowercase pairs (Aa, Bb, Cc, ...), grouped 3 to an item
+    // ("Aa Bb Cc") rather than one bare letter or even one pair at a
+    // time - otherwise this workbook alone would have 26 items to page
+    // through one at a time.
+    items: words(
+      chunk(
+        [...ALPHABET].map((letter) => letter.toUpperCase() + letter),
+        3,
+      ).map((group) => group.join(' ')),
+    ),
   },
   {
     id: 'maths',
