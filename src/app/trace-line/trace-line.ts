@@ -29,6 +29,34 @@ const CURSIVE_FONT = '"Dancing Script", cursive';
 // Playwrite GB S's, so it needs a size boost to read at a comparable scale.
 const CURSIVE_SIZE_MULTIPLIER = 1.4;
 
+// Width of the invisible "tolerance corridor" stroked along the guide
+// letterforms, used to judge whether ink landed on the letter (the live
+// green/red ink colour). Generous, since a child's pen control is
+// imprecise - this is a forgiving "are you roughly on the letter" test.
+const TARGET_TOLERANCE_WIDTH = 32;
+// A second, thin mask tracing the letterform's true path (not a wide
+// corridor) - coverage asks "did ink pass near each point of the actual
+// path", so the mask itself just needs to mark that path; making it wide
+// would compare pixel AREAS instead (mask vs. ink), and since ink is a
+// thin line, even a perfect trace could then only ever fill a sliver of a
+// wide corridor's area and would always score low.
+const COVERAGE_PATH_WIDTH = 8;
+// How far from each point on that path to look for ink - this, not the
+// mask width, is what makes coverage forgiving of a child's imprecision.
+const COVERAGE_TOLERANCE_RADIUS = 8;
+// Coverage scan reads every Nth backing-store pixel rather than all of
+// them - it only runs on a button click, but there's no need to walk
+// every pixel to get a representative percentage.
+const COVERAGE_SAMPLE_STRIDE = 4;
+
+const ON_TARGET_COLOR = '#16a34a';
+const OFF_TARGET_COLOR = '#dc2626';
+
+interface GuideFont {
+  fontSpec: string;
+  isCursive: boolean;
+}
+
 @Component({
   selector: 'app-trace-line',
   imports: [],
@@ -48,6 +76,14 @@ export class TraceLine {
   private drawing = false;
   private lastX = 0;
   private lastY = 0;
+
+  // Off-screen canvases holding the guide masks - never added to the DOM,
+  // only read back as pixel data. See TARGET_TOLERANCE_WIDTH/
+  // COVERAGE_PATH_WIDTH above for why there are two.
+  private readonly targetCanvas = document.createElement('canvas');
+  private targetMask?: ImageData;
+  private readonly coverageCanvas = document.createElement('canvas');
+  private coverageMask?: ImageData;
 
   constructor() {
     // Canvas backing size depends on the container's rendered width, which
@@ -80,6 +116,23 @@ export class TraceLine {
     return ctx;
   }
 
+  private currentFont(): GuideFont {
+    const isCursive = this.cursive();
+    const fontFamily = isCursive ? CURSIVE_FONT : PRINT_FONT;
+    const size = isCursive ? this.fontSize() * CURSIVE_SIZE_MULTIPLIER : this.fontSize();
+    return { fontSpec: `${size}px ${fontFamily}`, isCursive };
+  }
+
+  // Positions and strokes `text` identically on any context - used for both
+  // the visible dashed guide and the invisible tolerance-corridor mask, so
+  // the two always stay aligned regardless of font/size/cursive.
+  private strokeGuideText(ctx: CanvasRenderingContext2D, baselineY: number, font: GuideFont): void {
+    ctx.font = font.fontSpec;
+    ctx.textBaseline = 'alphabetic';
+    ctx.letterSpacing = font.isCursive ? '4px' : '0px';
+    ctx.strokeText(this.text(), 24, baselineY);
+  }
+
   private drawGuide(): void {
     const width = this.container().nativeElement.clientWidth;
     if (width === 0) return;
@@ -96,14 +149,11 @@ export class TraceLine {
     ctx.clearRect(0, 0, width, ROW_HEIGHT);
 
     const baselineY = ROW_HEIGHT * BASELINE_RATIO;
+    const font = this.currentFont();
 
     // Set the font before measuring, so the x-height (and hence the midline)
     // reflects the font actually in use rather than a guessed ratio.
-    const isCursive = this.cursive();
-    const fontFamily = isCursive ? CURSIVE_FONT : PRINT_FONT;
-    const size = isCursive ? this.fontSize() * CURSIVE_SIZE_MULTIPLIER : this.fontSize();
-    const fontSpec = `${size}px ${fontFamily}`;
-    ctx.font = fontSpec;
+    ctx.font = font.fontSpec;
     ctx.textBaseline = 'alphabetic';
 
     // "x" is a lowercase letter with no ascender/descender, so its own
@@ -134,16 +184,50 @@ export class TraceLine {
     ctx.strokeStyle = '#94a3b8';
     ctx.lineWidth = 2;
     ctx.setLineDash([6, 6]);
-    ctx.letterSpacing = isCursive ? '4px' : '0px';
-    ctx.strokeText(this.text(), 24, baselineY);
+    this.strokeGuideText(ctx, baselineY, font);
 
     // Unlike DOM text, drawing to a canvas never triggers the browser to
     // fetch a @font-face - it just silently falls back. Kick the load off
     // explicitly and redraw once the real glyphs are available. (Both fonts
     // are webfonts now, so this applies regardless of print/cursive.)
-    if (!document.fonts.check(fontSpec)) {
-      document.fonts.load(fontSpec).then(() => this.drawGuide());
+    if (!document.fonts.check(font.fontSpec)) {
+      document.fonts.load(font.fontSpec).then(() => this.drawGuide());
     }
+
+    this.targetMask = this.strokeMask(this.targetCanvas, width, baselineY, font, TARGET_TOLERANCE_WIDTH);
+    this.coverageMask = this.strokeMask(this.coverageCanvas, width, baselineY, font, COVERAGE_PATH_WIDTH);
+  }
+
+  // Renders the guide text off-screen with a thick solid stroke of the
+  // given width, and returns the resulting pixel data for hit-testing.
+  private strokeMask(
+    canvas: HTMLCanvasElement,
+    width: number,
+    baselineY: number,
+    font: GuideFont,
+    lineWidth: number,
+  ): ImageData {
+    const ctx = this.sizeCanvas(canvas, width, ROW_HEIGHT);
+    ctx.clearRect(0, 0, width, ROW_HEIGHT);
+    ctx.lineWidth = lineWidth;
+    ctx.lineJoin = 'round';
+    ctx.lineCap = 'round';
+    ctx.setLineDash([]);
+    this.strokeGuideText(ctx, baselineY, font);
+    return ctx.getImageData(0, 0, canvas.width, canvas.height);
+  }
+
+  // Converts CSS-pixel coordinates (as used by pointer events) to the
+  // DPR-scaled backing-store index of the cached target mask.
+  private isOnTarget(cssX: number, cssY: number): boolean {
+    const mask = this.targetMask;
+    if (!mask) return false;
+    const dpr = window.devicePixelRatio || 1;
+    const x = Math.round(cssX * dpr);
+    const y = Math.round(cssY * dpr);
+    if (x < 0 || y < 0 || x >= mask.width || y >= mask.height) return false;
+    const alphaIndex = (y * mask.width + x) * 4 + 3;
+    return mask.data[alphaIndex] > 0;
   }
 
   private inkContext(): CanvasRenderingContext2D {
@@ -173,7 +257,7 @@ export class TraceLine {
     const isPen = event.pointerType === 'pen';
     const width = isPen ? Math.max(1.5, event.pressure * 8) : 4;
 
-    ctx.strokeStyle = '#1d4ed8';
+    ctx.strokeStyle = this.isOnTarget(x, y) ? ON_TARGET_COLOR : OFF_TARGET_COLOR;
     ctx.lineWidth = width;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
@@ -194,5 +278,50 @@ export class TraceLine {
   clear(): void {
     const canvas = this.inkCanvas().nativeElement;
     this.inkContext().clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+  }
+
+  // Whether any ink pixel exists within `radius` of (x, y) - a cheap stand-in
+  // for "dilate the ink, then compare", so coverage tolerates a child's pen
+  // wandering a bit off the true path without needing the path mask itself
+  // to be as wide as that tolerance (see COVERAGE_PATH_WIDTH above).
+  private hasInkNear(ink: ImageData, x: number, y: number, radius: number): boolean {
+    const step = 2;
+    for (let dy = -radius; dy <= radius; dy += step) {
+      const ny = y + dy;
+      if (ny < 0 || ny >= ink.height) continue;
+      for (let dx = -radius; dx <= radius; dx += step) {
+        const nx = x + dx;
+        if (nx < 0 || nx >= ink.width) continue;
+        if (ink.data[(ny * ink.width + nx) * 4 + 3] > 0) return true;
+      }
+    }
+    return false;
+  }
+
+  // Scans the (narrow) coverage mask against the accumulated ink and
+  // reports what fraction of the guide letters actually got traced over.
+  checkTracing(): string {
+    const mask = this.coverageMask;
+    if (!mask) return "Couldn't check yet - try again.";
+
+    const inkCanvas = this.inkCanvas().nativeElement;
+    const ink = this.inkContext().getImageData(0, 0, inkCanvas.width, inkCanvas.height);
+
+    let targetPixels = 0;
+    let coveredPixels = 0;
+    for (let y = 0; y < mask.height; y += COVERAGE_SAMPLE_STRIDE) {
+      for (let x = 0; x < mask.width; x += COVERAGE_SAMPLE_STRIDE) {
+        const alphaIndex = (y * mask.width + x) * 4 + 3;
+        if (mask.data[alphaIndex] > 0) {
+          targetPixels++;
+          if (this.hasInkNear(ink, x, y, COVERAGE_TOLERANCE_RADIUS)) coveredPixels++;
+        }
+      }
+    }
+
+    const coverage = targetPixels === 0 ? 0 : Math.round((coveredPixels / targetPixels) * 100);
+    if (coverage >= 80) return `Great tracing! ${coverage}% traced.`;
+    if (coverage >= 50) return `Good try - ${coverage}% traced. Fill in the gaps!`;
+    return `${coverage}% traced - trace over the dashed letters.`;
   }
 }

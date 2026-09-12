@@ -2,8 +2,11 @@
 
 ## Core tracing experience
 
-- [ ] Capture and score the child's strokes against the guide letters, to
-      tell whether a letter was traced accurately.
+- [x] Capture and score the child's strokes against the guide letters, to
+      tell whether a letter was traced accurately. Live ink colour
+      (green/red) shows on/off-target as they write; a Check button scores
+      overall coverage against the guide, pixel-mask based (no font-path
+      library).
 - [x] Simpler, more child-friendly fonts — print now uses Playwrite GB S
       (single-story "a", built for handwriting instruction). Cursive is
       still Dancing Script (decorative) — the matching Playwrite GB J
