@@ -1,0 +1,33 @@
+.tiles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 160px;
+  padding: 20px;
+  border: 2px solid #94a3b8;
+  border-radius: 12px;
+  background: #fff;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.tile:hover {
+  border-color: #1d4ed8;
+}
+
+.tile-title {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.tile-meta {
+  font-size: 14px;
+  color: #64748b;
+}

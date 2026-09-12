@@ -14,9 +14,10 @@
 
 ## Content / workbooks
 
-- [ ] Home screen listing workbooks to open, instead of a single hard-coded
-      word.
-- [ ] Workbook: everyday words (colours, household objects, etc.).
+- [x] Home screen listing workbooks to open, instead of a single hard-coded
+      word. Also kept the old free-text entry as a "Custom Word" tile.
+- [x] Workbook: everyday words (colours, household objects, etc.) — 10
+      words, with Next/Previous navigation and progress ("Word X of Y").
 - [ ] Workbook: maths (simple equations, e.g. "1 + 1 = 2").
 - [ ] Workbook: shapes.
 - [ ] Workbook: alphabet (A-Z, one letter at a time).

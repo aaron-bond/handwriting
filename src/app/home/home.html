@@ -1,0 +1,13 @@
+<div class="tiles">
+  @for (workbook of workbooks; track workbook.id) {
+    <button type="button" class="tile" (click)="selectWorkbook.emit(workbook)">
+      <span class="tile-title">{{ workbook.title }}</span>
+      <span class="tile-meta">{{ workbook.words.length }} words</span>
+    </button>
+  }
+
+  <button type="button" class="tile" (click)="selectCustom.emit()">
+    <span class="tile-title">Custom Word</span>
+    <span class="tile-meta">Type your own</span>
+  </button>
+</div>
