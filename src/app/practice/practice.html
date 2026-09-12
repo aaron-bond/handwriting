@@ -14,7 +14,6 @@
     <button type="button" (click)="next()" [disabled]="!canGoNext()">Next ▶</button>
 
     <button type="button" (click)="clear()">🧹 Clear</button>
-    <button type="button" (click)="check()">✅ Check</button>
 
     @if (item().kind === 'text') {
       <label for="practice-cursive" class="checkbox-label">

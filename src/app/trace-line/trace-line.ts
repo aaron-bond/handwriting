@@ -6,6 +6,7 @@ import {
   effect,
   inject,
   input,
+  signal,
   viewChild,
 } from '@angular/core';
 
@@ -97,6 +98,13 @@ export class TraceLine {
   private readonly coverageCanvas = document.createElement('canvas');
   private coverageMask?: ImageData;
 
+  // Live tracing score - recomputed after each stroke (see onPointerUp)
+  // rather than behind a manual button, so there's one less thing on
+  // screen for a child to have to press. Public and read-only: callers
+  // just read it reactively, there's nothing to trigger it from outside.
+  private readonly _result = signal<TracingResult | null>(null);
+  readonly result = this._result.asReadonly();
+
   constructor() {
     // Canvas backing size depends on the container's rendered width, which
     // isn't known until after the first render.
@@ -114,6 +122,8 @@ export class TraceLine {
       this.shape();
       this.fontSize();
       this.cursive();
+      // A previous score describes the old guide, not this one.
+      this._result.set(null);
       this.drawGuide();
     });
   }
@@ -343,11 +353,17 @@ export class TraceLine {
   onPointerUp(event: PointerEvent): void {
     this.drawing = false;
     this.inkCanvas().nativeElement.releasePointerCapture(event.pointerId);
+    // Recompute after each completed stroke, not on every pointermove -
+    // scanning the ink/mask pixel buffers isn't free, and a stroke lift
+    // (finishing a letter, picking the pen back up) is a natural, cheap
+    // checkpoint for "how's it looking so far".
+    this._result.set(this.computeResult());
   }
 
   clear(): void {
     const canvas = this.inkCanvas().nativeElement;
     this.inkContext().clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+    this._result.set(null);
   }
 
   // Whether any ink pixel exists within `radius` of (x, y) - a cheap stand-in
@@ -370,7 +386,7 @@ export class TraceLine {
 
   // Scans the (narrow) coverage mask against the accumulated ink and
   // reports what fraction of the guide letters actually got traced over.
-  checkTracing(): TracingResult {
+  private computeResult(): TracingResult {
     const mask = this.coverageMask;
     if (!mask) return { coverage: 0, message: "Couldn't check yet - try again." };
 

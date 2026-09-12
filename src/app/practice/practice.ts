@@ -1,5 +1,5 @@
-import { Component, computed, effect, input, output, signal, viewChild } from '@angular/core';
-import { ShapeKind, TraceLine, TracingResult } from '../trace-line/trace-line';
+import { Component, computed, input, output, signal, viewChild } from '@angular/core';
+import { ShapeKind, TraceLine } from '../trace-line/trace-line';
 import { Workbook } from '../workbook';
 
 @Component({
@@ -16,7 +16,6 @@ export class Practice {
   readonly back = output<void>();
 
   protected readonly index = signal(0);
-  protected readonly feedback = signal<TracingResult | null>(null);
 
   protected readonly item = computed(() => this.workbook().items[this.index()]);
   protected readonly canGoPrevious = computed(() => this.index() > 0);
@@ -46,14 +45,9 @@ export class Practice {
 
   private readonly traceLine = viewChild.required(TraceLine);
 
-  constructor() {
-    // A previous check result describes the old word/style, not the new one.
-    effect(() => {
-      this.index();
-      this.cursive();
-      this.feedback.set(null);
-    });
-  }
+  // TraceLine recomputes this itself after each stroke - no Check button,
+  // no reset-on-navigate wiring needed here, just read it reactively.
+  protected readonly feedback = computed(() => this.traceLine().result());
 
   previous(): void {
     if (this.canGoPrevious()) this.index.update((i) => i - 1);
@@ -65,10 +59,5 @@ export class Practice {
 
   clear(): void {
     this.traceLine().clear();
-    this.feedback.set(null);
-  }
-
-  check(): void {
-    this.feedback.set(this.traceLine().checkTracing());
   }
 }

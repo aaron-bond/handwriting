@@ -13,13 +13,12 @@
       even with separate letters, which wasn't the plain-print look
       wanted. Cursive is still Dancing Script (decorative) — the matching
       Playwrite GB J style doesn't actually render its letters joined.
-- [ ] Make the % score live instead of needing a Check button - fewer
-      buttons on screen is better for kids. `checkTracing()` already
-      just scans the accumulated ink against the coverage mask, so it
-      could re-run continuously (debounced, e.g. on pointerup / a short
-      idle timer rather than every pointermove - it's not free, it walks
-      the ink+mask pixel buffers) and update the feedback text/celebration
-      automatically as they draw, with Check removed. Clear would stay.
+- [x] Made the % score live instead of needing a Check button. TraceLine
+      now recomputes its own score on `pointerup` (each completed stroke,
+      not every pointermove) and exposes it as a public read-only signal
+      (`result`); Practice/App just read it reactively instead of holding
+      their own feedback state and calling a method. Check button removed
+      everywhere - Clear stays.
 
 ## Content / workbooks
 
@@ -80,12 +79,12 @@
       properties on its tile and practice screen, so the shared button/
       input/feedback styles pick it up automatically via
       `var(--accent, var(--color-primary))` fallbacks); colour-matched
-      icon badges on home tiles; button icons (🏠◀▶🧹✅) on every
-      Home/Clear/Check/Previous/Next button; a celebratory pop-in pill
-      (🎉 + bounce animation) when Check scores ≥80%; and soft blurred
-      background blobs behind every screen. `TraceLine.checkTracing()`
-      now returns `{ coverage, message }` instead of a bare string so
-      callers can style by score tier without parsing the message text.
+      icon badges on home tiles; button icons (🏠◀▶🧹) on the nav
+      buttons; a celebratory pop-in pill (🎉 + bounce animation) when the
+      live score reaches ≥80%; and soft blurred background blobs behind
+      every screen. TraceLine's tracing result is `{ coverage, message }`
+      rather than a bare string so callers can style by score tier
+      without parsing the message text (see live-scoring item above).
       Still to revisit: the practice screens' tracing canvas area itself
       (currently plain white/transparent, no card frame like the home
       tiles have).
