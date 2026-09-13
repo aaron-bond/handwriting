@@ -1,0 +1,79 @@
+{
+  "configVersion": 1,
+  "timestamp": 1789300148944,
+  "index": "/handwriting/index.html",
+  "assetGroups": [
+    {
+      "name": "app",
+      "installMode": "prefetch",
+      "updateMode": "prefetch",
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
+      "urls": [
+        "/handwriting/favicon.ico",
+        "/handwriting/index.html",
+        "/handwriting/main-HOMGSEHB.js",
+        "/handwriting/manifest.webmanifest",
+        "/handwriting/styles-DUJUDKA2.css"
+      ],
+      "patterns": []
+    },
+    {
+      "name": "assets",
+      "installMode": "lazy",
+      "updateMode": "prefetch",
+      "cacheQueryOptions": {
+        "ignoreVary": true
+      },
+      "urls": [
+        "/handwriting/icons/icon-128x128.png",
+        "/handwriting/icons/icon-144x144.png",
+        "/handwriting/icons/icon-152x152.png",
+        "/handwriting/icons/icon-180x180.png",
+        "/handwriting/icons/icon-192x192.png",
+        "/handwriting/icons/icon-384x384.png",
+        "/handwriting/icons/icon-512x512.png",
+        "/handwriting/icons/icon-72x72.png",
+        "/handwriting/icons/icon-96x96.png"
+      ],
+      "patterns": []
+    }
+  ],
+  "dataGroups": [],
+  "hashTable": {
+    "/handwriting/favicon.ico": "9c39f434fe1261f68c5e3eefdf734630d99c5670",
+    "/handwriting/icons/icon-128x128.png": "3d0453c41d2ab5fedce769de40717c37b948fc3b",
+    "/handwriting/icons/icon-144x144.png": "54452b3cd8cd54f8daf0db59b90cbbc29094a10d",
+    "/handwriting/icons/icon-152x152.png": "7e7078add3f56368026353043fe155dbf644575b",
+    "/handwriting/icons/icon-180x180.png": "27f136765a811d6393599c7aa18ed4a51954e6a1",
+    "/handwriting/icons/icon-192x192.png": "992fe0d02ad919368c19575a9351c3ff7974b5e6",
+    "/handwriting/icons/icon-384x384.png": "85013bb2326133a1b1acf9d82fbaea90fbf42528",
+    "/handwriting/icons/icon-512x512.png": "96e3bc51c8e241532a20327232e05fa783d9290b",
+    "/handwriting/icons/icon-72x72.png": "bd3090dd13ea704fcc2d389fe8cbaab982c15d54",
+    "/handwriting/icons/icon-96x96.png": "cc5116c7ef30941604cfa22178acfbe65690f6a5",
+    "/handwriting/index.html": "7263a39c4827f4019ff35152bfa0ba6f075e878d",
+    "/handwriting/main-HOMGSEHB.js": "4d6adb38ba5ac9ca060981ae49217045e561abda",
+    "/handwriting/manifest.webmanifest": "0906e24c2b1e67b9be6023fc8b95f611bb39cf91",
+    "/handwriting/styles-DUJUDKA2.css": "dd6fc3b9b5cd218bb7c9f98b2a8274374a4e942c"
+  },
+  "navigationUrls": [
+    {
+      "positive": true,
+      "regex": "^\\/.*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*\\.[^/]*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*__[^/]*$"
+    },
+    {
+      "positive": false,
+      "regex": "^\\/(?:.+\\/)?[^/]*__[^/]*\\/.*$"
+    }
+  ],
+  "navigationRequestStrategy": "performance"
+}
