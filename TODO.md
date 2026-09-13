@@ -76,6 +76,19 @@
       immediately undid every completion right after `onPointerUp` set
       it, wiping the ink and message with no visible error. Fixed with
       `untracked()` around the writes/redraw.
+- [ ] "Complete the Picture" has gone down well with actual kids testing
+      it - worth investing further. Two directions: (1) more detail per
+      picture - right now each is just one hole plus 0-2 simple adjacent
+      context pieces (a string, a stem+leaf, a cone); could add more
+      context pieces per picture (e.g. clouds/sun behind the balloon,
+      grass under the tree in Doodles-style compositions, a face on the
+      ice-cream cone) for a richer scene, and/or multiple holes per
+      picture (colour in several pieces to complete one bigger scene,
+      rather than always a single hole). (2) more pictures - candidates:
+      fish, butterfly, rainbow, flower, cupcake, car, boat. Both are
+      additive to `PICTURES`/`PictureDef` in `picture-fill.ts` - worth
+      checking first whether multiple holes needs `PictureDef.hole` to
+      become a list rather than a single path function.
 
 ## Visual design
 
