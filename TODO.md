@@ -165,3 +165,19 @@ this file is just the backlog.
       synthetic `beforeinstallprompt` event: button absent beforehand,
       appears on the event, calls the captured event's `prompt()` when
       clicked, disappears after (a used prompt event can't be re-shown).
+- [x] Fullscreen once installed - no status bar, so a child tapping
+      around a shared tablet can't accidentally pull down a notification
+      shade or land on the clock/battery. Manifest now sets
+      `display_override: ["fullscreen", "standalone"]`, which
+      Android/Chrome honours for real; iOS has no true fullscreen for
+      home-screen web apps, so it gets the closest available substitute
+      instead (`apple-mobile-web-app-status-bar-style:
+      black-translucent`, an overlaid see-through bar rather than a
+      hidden one). Both needed the page to draw under that area instead
+      of leaving a dead gap there - added `viewport-fit=cover` and swapped
+      `.page`'s fixed padding for `max(32px, env(safe-area-inset-top))`
+      (per side). Verified the no-notch case regresses nothing (computed
+      padding still exactly 32px/24px, screenshot pixel-identical to
+      before, since `env(safe-area-inset-*)` is 0 there) - actually
+      seeing the status bar hidden needs a real notched/Android device,
+      which is out of reach from here.

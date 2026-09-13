@@ -3,7 +3,12 @@
   z-index: 1;
   max-width: 900px;
   margin: 0 auto;
-  padding: 32px 24px;
+  /* env(safe-area-inset-*) is 0 on anything without a notch/status-bar
+     overlay, so this is just 32px/24px there, same as before - it only
+     adds extra room once the app is drawing full-bleed under one
+     (fullscreen display mode, or iOS's black-translucent status bar). */
+  padding: max(32px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right))
+    max(32px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left));
 }
 
 .header-row {

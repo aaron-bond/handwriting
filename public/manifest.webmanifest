@@ -3,6 +3,7 @@
   "short_name": "Handwriting",
   "description": "Faded guide letters, shapes, and pictures for a young child to trace or colour over on a tablet.",
   "display": "standalone",
+  "display_override": ["fullscreen", "standalone"],
   "scope": "./",
   "start_url": "./",
   "theme_color": "#4dabf7",

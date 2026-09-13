@@ -53,6 +53,21 @@ architecture and the reasoning behind it.
   Safari never fire it, so the button never renders there, no separate
   feature-detection needed since the event firing at all already *is*
   the browser's own "every install criterion is met right now" check).
+- Runs edge-to-edge with no status bar once installed: the manifest's
+  `display_override: ["fullscreen", "standalone"]` asks Android/Chrome
+  for true fullscreen, falling back to `standalone` (the plain
+  `display` value, for UAs that don't understand `display_override` at
+  all) wherever fullscreen isn't available - this fallback chain is
+  automatic per spec, no feature-detection code needed on our side
+  either. iOS has no true fullscreen for home-screen web apps; the
+  closest is `apple-mobile-web-app-status-bar-style: black-translucent`
+  in `index.html`, which overlays a see-through status bar on top of
+  the page instead of hiding it. Both of those need content to actually
+  extend under that area rather than leaving a dead gap there - the
+  viewport meta's `viewport-fit=cover` plus `.page`'s padding using
+  `max(32px, env(safe-area-inset-top))` (etc. per side) handle that:
+  `env(safe-area-inset-*)` is 0 on any device without a notch/overlay,
+  so this is a no-op everywhere except the devices it's actually for.
 
 ## Screens and data model
 
