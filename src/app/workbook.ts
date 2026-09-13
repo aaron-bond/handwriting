@@ -1,6 +1,10 @@
+import { PictureKind } from './picture-fill/picture-fill';
 import { ShapeKind } from './trace-line/trace-line';
 
-export type PracticeItem = { kind: 'text'; value: string } | { kind: 'shape'; value: ShapeKind };
+export type PracticeItem =
+  | { kind: 'text'; value: string }
+  | { kind: 'shape'; value: ShapeKind }
+  | { kind: 'picture'; value: PictureKind };
 
 // A workbook's colour theme, bound as CSS custom properties (--accent/
 // --accent-dark/--accent-soft) on that workbook's tile/screen so one set
@@ -34,6 +38,10 @@ function words(values: string[]): PracticeItem[] {
 
 function shapes(values: ShapeKind[]): PracticeItem[] {
   return values.map((value) => ({ kind: 'shape', value }));
+}
+
+function pictures(values: PictureKind[]): PracticeItem[] {
+  return values.map((value) => ({ kind: 'picture', value }));
 }
 
 function chunk<T>(values: T[], size: number): T[][] {
@@ -112,5 +120,16 @@ export const WORKBOOKS: Workbook[] = [
     // pieces instead of one), so it reuses Shapes' whole rendering/
     // scoring pipeline unchanged.
     items: shapes(['face', 'sun', 'tree', 'house', 'waves']),
+  },
+  {
+    id: 'complete-the-picture',
+    title: 'Complete the Picture',
+    icon: '🖼️',
+    itemLabel: 'pictures',
+    color: { accent: '#ff6b6b', accentDark: '#e03131', accentSoft: '#ffe3e3' },
+    // A different interaction model from every other workbook - colour
+    // in the missing piece (any reasonable attempt, not a precise trace)
+    // and it reveals a solid-colour fill. See picture-fill.ts.
+    items: pictures(['balloon', 'apple', 'heart', 'star', 'icecream']),
   },
 ];

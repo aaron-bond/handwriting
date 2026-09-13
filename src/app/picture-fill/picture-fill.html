@@ -1,0 +1,13 @@
+<div class="trace-card">
+  <div class="picture-fill" #container>
+    <canvas #art class="art"></canvas>
+    <canvas
+      #ink
+      class="ink"
+      (pointerdown)="onPointerDown($event)"
+      (pointermove)="onPointerMove($event)"
+      (pointerup)="onPointerUp($event)"
+      (pointercancel)="onPointerUp($event)"
+    ></canvas>
+  </div>
+</div>

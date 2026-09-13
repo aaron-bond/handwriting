@@ -59,19 +59,23 @@
 
 ## Other activity ideas
 
-- [ ] "Complete the picture" activity — a simple solid-colour image with
-      one piece missing (left blank/outlined); the child scribbles/colours
-      in the missing piece, and on submit that area is replaced with the
-      real solid-colour piece, completing the picture. A different
-      interaction model from tracing-and-scoring: it's about rewarding
-      any reasonable attempt at filling the space (not accuracy against a
-      guide path), with a satisfying reveal at the end regardless of how
-      messy the colouring is. Needs: a way to define an image + its
-      missing region (simplest: a filled shape/path marking the "hole",
-      similar to how Shapes/Doodles define their guides), a "did they
-      colour roughly inside the hole" check (loose - just enough ink
-      inside the region, not the precise on-path scoring TraceLine does),
-      and a reveal step that swaps the ink for the solid-colour fill.
+- [x] "Complete the Picture" activity — balloon, apple, heart, star,
+      icecream. A different interaction model from every other workbook
+      (reward any reasonable colouring attempt, not precision), so it's
+      its own `PictureFill` component rather than another TraceLine mode:
+      one filled-region pixel mask (not TraceLine's wide-corridor/narrow-
+      path pair - a hole and a scribble are both *areas*, so plain
+      pixel-for-pixel overlap works, no tolerance radius needed), ink
+      always drawn in the picture's own target colour, and no in-progress
+      percentage shown - it's silent until >=50% coverage, then reveals a
+      solid fill and a fixed celebration result. Found and fixed a real
+      bug along the way: the "reset on picture change" effect called
+      draw(), which reads the `completed` signal to decide dashed-vs-
+      filled rendering - since the effect also *writes* `completed`, it
+      ended up depending on its own write (via that nested read) and
+      immediately undid every completion right after `onPointerUp` set
+      it, wiping the ink and message with no visible error. Fixed with
+      `untracked()` around the writes/redraw.
 
 ## Visual design
 

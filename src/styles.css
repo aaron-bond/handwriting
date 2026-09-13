@@ -83,6 +83,15 @@ h3 {
   cursor: not-allowed;
 }
 
+/* Shared by TraceLine and PictureFill - both wrap their canvases in this
+   same white rounded "paper" card. */
+.trace-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--accent, var(--color-primary)) 20%, transparent);
+}
+
 .checkbox-label {
   display: flex;
   align-items: center;

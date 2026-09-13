@@ -41,7 +41,11 @@
     }
   </div>
 
-  <app-trace-line [text]="textValue()" [shape]="shapeValue()" [cursive]="cursive()" />
+  @if (item().kind === 'picture') {
+    <app-picture-fill [picture]="pictureValue()!" />
+  } @else {
+    <app-trace-line [text]="textValue()" [shape]="shapeValue()" [cursive]="cursive()" />
+  }
 
   @if (feedback(); as result) {
     <p class="feedback" [class.feedback--celebrate]="result.coverage >= 80">

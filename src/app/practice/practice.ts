@@ -1,4 +1,5 @@
 import { Component, computed, input, output, signal, viewChild } from '@angular/core';
+import { PictureFill, PictureKind } from '../picture-fill/picture-fill';
 import { ShapeKind, TraceLine } from '../trace-line/trace-line';
 import { PracticeItem, Workbook } from '../workbook';
 
@@ -21,9 +22,17 @@ const SHAPE_ICONS: Record<ShapeKind, string> = {
   waves: '🌊',
 };
 
+const PICTURE_ICONS: Record<PictureKind, string> = {
+  balloon: '🎈',
+  apple: '🍎',
+  heart: '❤️',
+  star: '⭐',
+  icecream: '🍦',
+};
+
 @Component({
   selector: 'app-practice',
-  imports: [TraceLine],
+  imports: [TraceLine, PictureFill],
   templateUrl: './practice.html',
   styleUrl: './practice.css',
 })
@@ -40,11 +49,11 @@ export class Practice {
   protected readonly canGoPrevious = computed(() => this.index() > 0);
   protected readonly canGoNext = computed(() => this.index() < this.workbook().items.length - 1);
 
-  // Narrowed views of `item()` for TraceLine's inputs - a single local
+  // Narrowed views of `item()` for the trace-area inputs - a single local
   // read of item() lets TypeScript narrow `.value`'s type per branch,
-  // which two separate `item()` calls in the template can't do (both
+  // which separate `item()` calls in the template can't do (all three
   // variants share a `value` property, so without narrowing its type is
-  // `string | ShapeKind`, satisfying neither `text` nor `shape`).
+  // `string | ShapeKind | PictureKind`, satisfying none of the inputs).
   protected readonly textValue = computed(() => {
     const current = this.item();
     return current.kind === 'text' ? current.value : '';
@@ -52,6 +61,10 @@ export class Practice {
   protected readonly shapeValue = computed<ShapeKind | null>(() => {
     const current = this.item();
     return current.kind === 'shape' ? current.value : null;
+  });
+  protected readonly pictureValue = computed<PictureKind | null>(() => {
+    const current = this.item();
+    return current.kind === 'picture' ? current.value : null;
   });
 
   // Singularized, capitalized form of the workbook's plural itemLabel
@@ -62,11 +75,15 @@ export class Practice {
     return singular.charAt(0).toUpperCase() + singular.slice(1);
   });
 
-  private readonly traceLine = viewChild.required(TraceLine);
+  // Only one of these is ever actually in the template at a time
+  // (@if on item().kind), so both are optional - feedback/clear() below
+  // just read/call whichever one exists.
+  private readonly traceLine = viewChild(TraceLine);
+  private readonly pictureFill = viewChild(PictureFill);
 
-  // TraceLine recomputes this itself after each stroke - no Check button,
+  // Both recompute their own result after each stroke - no Check button,
   // no reset-on-navigate wiring needed here, just read it reactively.
-  protected readonly feedback = computed(() => this.traceLine().result());
+  protected readonly feedback = computed(() => this.traceLine()?.result() ?? this.pictureFill()?.result() ?? null);
 
   previous(): void {
     if (this.canGoPrevious()) this.index.update((i) => i - 1);
@@ -81,12 +98,16 @@ export class Practice {
   }
 
   clear(): void {
-    this.traceLine().clear();
+    this.traceLine()?.clear();
+    this.pictureFill()?.clear();
   }
 
   // Picker-pill label for an arbitrary item, not just the current one
-  // (unlike textValue/shapeValue above, which only need the current item).
+  // (unlike textValue/shapeValue/pictureValue above, which only need the
+  // current item).
   pickerLabel(item: PracticeItem): string {
-    return item.kind === 'text' ? item.value : SHAPE_ICONS[item.value];
+    if (item.kind === 'text') return item.value;
+    if (item.kind === 'shape') return SHAPE_ICONS[item.value];
+    return PICTURE_ICONS[item.value];
   }
 }
