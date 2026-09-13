@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1789301612639,
+  "timestamp": 1789303465658,
   "index": "/handwriting/index.html",
   "assetGroups": [
     {
@@ -13,7 +13,7 @@
       "urls": [
         "/handwriting/favicon.ico",
         "/handwriting/index.html",
-        "/handwriting/main-TXYZEJKS.js",
+        "/handwriting/main-ZYC22KB2.js",
         "/handwriting/manifest.webmanifest",
         "/handwriting/styles-DUJUDKA2.css"
       ],
@@ -52,9 +52,9 @@
     "/handwriting/icons/icon-512x512.png": "96e3bc51c8e241532a20327232e05fa783d9290b",
     "/handwriting/icons/icon-72x72.png": "bd3090dd13ea704fcc2d389fe8cbaab982c15d54",
     "/handwriting/icons/icon-96x96.png": "cc5116c7ef30941604cfa22178acfbe65690f6a5",
-    "/handwriting/index.html": "04dcb94fdd60dfb89a34ca4d4b940893b895313e",
-    "/handwriting/main-TXYZEJKS.js": "2ea73794bf0f5804d1695ad448cf72ac50bbbdeb",
-    "/handwriting/manifest.webmanifest": "0906e24c2b1e67b9be6023fc8b95f611bb39cf91",
+    "/handwriting/index.html": "9e140260b991d3a92a66ec0a9696c70f1db84ce3",
+    "/handwriting/main-ZYC22KB2.js": "2e2582f83f42ea79e9b0cd11de1ce876dae8369a",
+    "/handwriting/manifest.webmanifest": "6640edb30905bd89c0da87ba8c170e42225dcf60",
     "/handwriting/styles-DUJUDKA2.css": "dd6fc3b9b5cd218bb7c9f98b2a8274374a4e942c"
   },
   "navigationUrls": [
