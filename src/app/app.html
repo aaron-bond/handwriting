@@ -5,7 +5,12 @@
 </div>
 
 <main class="page">
-  <h1>Handwriting Practice</h1>
+  <div class="header-row">
+    <h1>Handwriting Practice</h1>
+    @if (canInstall()) {
+      <button type="button" class="install-button" (click)="install()">⬇️ Install App</button>
+    }
+  </div>
 
   @switch (screen()) {
     @case ('home') {

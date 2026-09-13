@@ -148,4 +148,20 @@ this file is just the backlog.
       event didn't fire in this headless check - a known Chromium
       headless-automation quirk, not a sign anything's wrong - so the
       actual install prompt is still worth eyeballing once on a real
-      device/browser after this ships.
+      device/browser after this ships. Confirmed working on a real
+      device after deploying.
+- [x] In-app "Install App" button (next to the `<h1>`, all screens), so
+      sharing the plain URL is enough - no separate "install link" is
+      possible (browsers deliberately don't let any link silently
+      install something), but a visible one-tap button beats hoping
+      people notice the browser's own install icon. Only ever rendered
+      when `window`'s `beforeinstallprompt` has actually fired - that
+      event firing *is* Chrome/Edge's own confirmation that every install
+      criterion is currently met, so it doubles as the "would this
+      actually work" check with no separate probing needed. Firefox and
+      Safari never fire it, so the button simply never appears there
+      (unchanged from before - manual "Add to Home Screen" is still the
+      only path on iOS). Verified with Playwright by dispatching a
+      synthetic `beforeinstallprompt` event: button absent beforehand,
+      appears on the event, calls the captured event's `prompt()` when
+      clicked, disappears after (a used prompt event can't be re-shown).

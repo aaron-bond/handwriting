@@ -6,11 +6,38 @@
   padding: 32px 24px;
 }
 
+.header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
 h1 {
   font-size: 36px;
   font-weight: 700;
   color: var(--color-primary-dark);
   margin: 0 0 24px;
+}
+
+.install-button {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 15px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--color-primary);
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.install-button:hover {
+  background: var(--color-primary-dark);
+  transform: translateY(-1px);
 }
 
 /* Soft, blurred colour blobs fixed behind every screen - decorative only,

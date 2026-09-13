@@ -44,6 +44,15 @@ architecture and the reasoning behind it.
   from one SVG at each required size via a Playwright screenshot script
   (ad hoc, not part of the repo) rather than a raster image editor - kept
   vector until the final rasterization step so every size stays crisp.
+  `App` also shows its own "Install App" button (next to the `<h1>`) so
+  people don't have to notice the browser's own install affordance -
+  there's no such thing as a link that installs a PWA on click, browsers
+  deliberately require a user gesture on the actual page, so this button
+  plus sharing the plain URL is as close as it gets. Gated on `window`
+  actually firing `beforeinstallprompt` (Chrome/Edge only - Firefox/
+  Safari never fire it, so the button never renders there, no separate
+  feature-detection needed since the event firing at all already *is*
+  the browser's own "every install criterion is met right now" check).
 
 ## Screens and data model
 
