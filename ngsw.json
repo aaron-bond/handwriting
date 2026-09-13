@@ -1,6 +1,6 @@
 {
   "configVersion": 1,
-  "timestamp": 1789303465658,
+  "timestamp": 1789303988512,
   "index": "/handwriting/index.html",
   "assetGroups": [
     {
@@ -13,7 +13,7 @@
       "urls": [
         "/handwriting/favicon.ico",
         "/handwriting/index.html",
-        "/handwriting/main-ZYC22KB2.js",
+        "/handwriting/main-RXHEN2QG.js",
         "/handwriting/manifest.webmanifest",
         "/handwriting/styles-DUJUDKA2.css"
       ],
@@ -52,8 +52,8 @@
     "/handwriting/icons/icon-512x512.png": "96e3bc51c8e241532a20327232e05fa783d9290b",
     "/handwriting/icons/icon-72x72.png": "bd3090dd13ea704fcc2d389fe8cbaab982c15d54",
     "/handwriting/icons/icon-96x96.png": "cc5116c7ef30941604cfa22178acfbe65690f6a5",
-    "/handwriting/index.html": "9e140260b991d3a92a66ec0a9696c70f1db84ce3",
-    "/handwriting/main-ZYC22KB2.js": "2e2582f83f42ea79e9b0cd11de1ce876dae8369a",
+    "/handwriting/index.html": "c8aa07a453ddf1249ae19386118060e0814bbdd0",
+    "/handwriting/main-RXHEN2QG.js": "42761cd62c39859a69a91d70ad395e5137c47510",
     "/handwriting/manifest.webmanifest": "6640edb30905bd89c0da87ba8c170e42225dcf60",
     "/handwriting/styles-DUJUDKA2.css": "dd6fc3b9b5cd218bb7c9f98b2a8274374a4e942c"
   },
