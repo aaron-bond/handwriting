@@ -16,32 +16,46 @@
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 8px 12px;
+  /* Lives here rather than on h1 - on a narrow screen the button wraps
+     onto its own line below the (often two-line) title, and this way
+     there's still just one consistent gap after the whole header block
+     instead of the title's margin and the wrapped button both adding
+     their own spacing. */
+  margin-bottom: 24px;
 }
 
 h1 {
   font-size: 36px;
   font-weight: 700;
   color: var(--color-primary-dark);
-  margin: 0 0 24px;
+  margin: 0;
 }
 
 .install-button {
   font-family: var(--font-body);
   font-weight: 700;
-  font-size: 15px;
-  padding: 10px 16px;
+  font-size: 14px;
+  padding: 8px 14px;
   border: none;
   border-radius: var(--radius-md);
-  background: var(--color-primary);
-  color: #fff;
+  /* A quiet utility badge, not a second bold CTA competing with the
+     title - especially once flex-wrap drops it onto its own line on a
+     narrow screen, a solid saturated fill there read as a stray banner. */
+  background: var(--color-primary-soft);
+  color: var(--color-primary-dark);
   cursor: pointer;
   white-space: nowrap;
-  transition: background-color 0.15s ease, transform 0.15s ease;
+  /* Pins it to the right - including on its own wrapped line, where
+     plain space-between has nothing left to push against and would
+     otherwise strand it at the left edge. */
+  margin-left: auto;
+  transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
 }
 
 .install-button:hover {
-  background: var(--color-primary-dark);
+  background: var(--color-primary);
+  color: #fff;
   transform: translateY(-1px);
 }
 
