@@ -81,9 +81,9 @@ architecture and the reasoning behind it.
 - `src/app/practice/` - the navigation shell for a workbook: title,
   progress ("Word 3 of 10"), an item picker (tappable pills, jump to any
   item), Previous/Next (bare arrow icons - the picker is the primary
-  navigation now), Clear, and a Cursive checkbox (only for text items).
-  Renders `<app-trace-line>` or `<app-picture-fill>` depending on the
-  current item's `kind`.
+  navigation now), Undo, Clear, and a Cursive checkbox (only for text
+  items). Renders `<app-trace-line>` or `<app-picture-fill>` depending on
+  the current item's `kind`.
 - `src/app/workbook.ts` - `Workbook { id, title, icon, itemLabel, color,
   items }`. `PracticeItem` is a union: `{kind:'text', value: string} |
   {kind:'shape', value: ShapeKind} | {kind:'picture', value:
@@ -124,6 +124,15 @@ composed "doodles" (face, sun, tree, house, waves) that are just a
 handful of independently-stroked pieces instead of one - no separate
 architecture was needed for doodles, just more `ShapeKind` cases.
 
+Undo (both this and `PictureFill` below) works by snapshotting the whole
+ink canvas (`getImageData`) just before each stroke starts, pushing it
+onto a stack, and restoring the top snapshot (`putImageData`) rather
+than recording/replaying individual strokes - ink is a raster with no
+notion of "strokes" to replay in the first place. Capped at
+`MAX_UNDO_STEPS` (25) since each snapshot is a few MB at device pixel
+ratio; reset to empty on Clear, on a guide/item change, and on resize
+(old snapshots are the wrong size once the canvas itself is resized).
+
 **`src/app/picture-fill/picture-fill.ts`** - "Complete the Picture": a
 deliberately different interaction model. The child colours in a missing
 piece (a hole) of a small picture (balloon, apple, heart, star,
@@ -136,6 +145,13 @@ in-progress percentage, no "keep going" nagging. Each picture is a hole
 path plus optional permanent "already coloured" context pieces (a
 balloon's string, an apple's stem+leaf) positioned adjacent to the hole,
 never on top of it, to dodge any z-order/redraw-order fuss.
+
+Undo here has one wrinkle TraceLine doesn't: a stroke can complete the
+picture, so undoing it has to reverse the completion too, not just the
+ink. `undo()` un-sets `completed` and calls `draw()` (which redraws the
+dashed hole) *before* restoring the snapshot, since `draw()` resizes -
+and so clears - the ink canvas as a side effect, which would otherwise
+wipe out the just-restored ink if done in the other order.
 
 **Gotcha hit once, worth remembering:** an `effect()` that both *writes*
 a signal and, through a function it calls (like `draw()`), also *reads*

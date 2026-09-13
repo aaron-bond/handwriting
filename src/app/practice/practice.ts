@@ -91,6 +91,7 @@ export class Practice {
   // Both recompute their own result after each stroke - no Check button,
   // no reset-on-navigate wiring needed here, just read it reactively.
   protected readonly feedback = computed(() => this.traceLine()?.result() ?? this.pictureFill()?.result() ?? null);
+  protected readonly canUndo = computed(() => this.traceLine()?.canUndo() ?? this.pictureFill()?.canUndo() ?? false);
 
   previous(): void {
     if (this.canGoPrevious()) this.index.update((i) => i - 1);
@@ -107,6 +108,11 @@ export class Practice {
   clear(): void {
     this.traceLine()?.clear();
     this.pictureFill()?.clear();
+  }
+
+  undo(): void {
+    this.traceLine()?.undo();
+    this.pictureFill()?.undo();
   }
 
   // Picker-pill label for an arbitrary item, not just the current one

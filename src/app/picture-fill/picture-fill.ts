@@ -3,6 +3,7 @@ import {
   DestroyRef,
   ElementRef,
   afterNextRender,
+  computed,
   effect,
   inject,
   input,
@@ -21,6 +22,9 @@ const ROW_HEIGHT = 220;
 // "off-target" ink here the way TraceLine has).
 const COMPLETE_THRESHOLD = 50;
 const SAMPLE_STRIDE = 4;
+// See TraceLine's MAX_UNDO_STEPS for why this is capped - same "whole
+// canvas per snapshot" cost.
+const MAX_UNDO_STEPS = 25;
 
 export type PictureKind =
   | 'balloon'
@@ -457,10 +461,21 @@ export class PictureFill {
   private readonly _result = signal<TracingResult | null>(null);
   readonly result = this._result.asReadonly();
 
+  // One snapshot per stroke, taken just before it starts - including the
+  // stroke that pushes coverage past the threshold, so undo can still
+  // revert a completion the child didn't mean to trigger (see undo()).
+  private readonly undoStack = signal<ImageData[]>([]);
+  readonly canUndo = computed(() => this.undoStack().length > 0);
+
   constructor() {
     afterNextRender(() => {
       const container = this.container().nativeElement;
-      this.resizeObserver = new ResizeObserver(() => this.draw());
+      this.resizeObserver = new ResizeObserver(() => {
+        // Old snapshots are the wrong size once draw() below resizes the
+        // ink canvas's backing store.
+        this.undoStack.set([]);
+        this.draw();
+      });
       this.resizeObserver.observe(container);
       this.draw();
     });
@@ -478,6 +493,7 @@ export class PictureFill {
         // A different picture, or the same one drawn again from scratch.
         this._completed.set(false);
         this._result.set(null);
+        this.undoStack.set([]);
         this.draw();
       });
     });
@@ -543,10 +559,18 @@ export class PictureFill {
     if (this._completed()) return;
     event.preventDefault();
     this.inkCanvas().nativeElement.setPointerCapture(event.pointerId);
+    this.pushUndoSnapshot();
     this.drawing = true;
     const { x, y } = this.pointerPosition(event);
     this.lastX = x;
     this.lastY = y;
+  }
+
+  private pushUndoSnapshot(): void {
+    const canvas = this.inkCanvas().nativeElement;
+    const snapshot = this.inkContext().getImageData(0, 0, canvas.width, canvas.height);
+    const stack = [...this.undoStack(), snapshot];
+    this.undoStack.set(stack.length > MAX_UNDO_STEPS ? stack.slice(-MAX_UNDO_STEPS) : stack);
   }
 
   onPointerMove(event: PointerEvent): void {
@@ -614,6 +638,25 @@ export class PictureFill {
     this._result.set(null);
     const canvas = this.inkCanvas().nativeElement;
     this.inkContext().clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+    this.undoStack.set([]);
     this.draw();
+  }
+
+  undo(): void {
+    const stack = this.undoStack();
+    if (stack.length === 0) return;
+    const previous = stack[stack.length - 1];
+    this.undoStack.set(stack.slice(0, -1));
+
+    if (this._completed()) {
+      // The stroke being undone is the one that completed the picture -
+      // draw() resizes (and so clears) the ink canvas as a side effect,
+      // which would otherwise wipe out `previous` below if this ran
+      // after restoring it, so restore the dashed/incomplete look first.
+      this._completed.set(false);
+      this._result.set(null);
+      this.draw();
+    }
+    this.inkContext().putImageData(previous, 0, 0);
   }
 }

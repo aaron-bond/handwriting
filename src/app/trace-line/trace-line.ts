@@ -3,6 +3,7 @@ import {
   DestroyRef,
   ElementRef,
   afterNextRender,
+  computed,
   effect,
   inject,
   input,
@@ -51,6 +52,11 @@ const COVERAGE_TOLERANCE_RADIUS = 8;
 // them - it only runs on a button click, but there's no need to walk
 // every pixel to get a representative percentage.
 const COVERAGE_SAMPLE_STRIDE = 4;
+// Each undo step snapshots the whole ink canvas (getImageData), which at
+// device pixel ratio can be a few MB - cap the history so a child who
+// keeps scribbling on one item without ever lifting to move on can't
+// grow this unboundedly.
+const MAX_UNDO_STEPS = 25;
 
 const ON_TARGET_COLOR = '#16a34a';
 const OFF_TARGET_COLOR = '#dc2626';
@@ -114,6 +120,13 @@ export class TraceLine {
   // just read it reactively, there's nothing to trigger it from outside.
   private readonly _result = signal<TracingResult | null>(null);
   readonly result = this._result.asReadonly();
+
+  // One snapshot per completed stroke, taken just before it starts (so
+  // the bottom of the stack is always the blank canvas) - undo restores
+  // the previous snapshot wholesale rather than replaying strokes, since
+  // ink is a raster (no record of individual strokes to replay anyway).
+  private readonly undoStack = signal<ImageData[]>([]);
+  readonly canUndo = computed(() => this.undoStack().length > 0);
 
   constructor() {
     // Canvas backing size depends on the container's rendered width, which
@@ -279,6 +292,9 @@ export class TraceLine {
     // strokes stay aligned after a resize (this clears in-progress ink,
     // which is an acceptable trade-off for a resize/orientation change).
     this.sizeCanvas(ink.nativeElement, width, ROW_HEIGHT);
+    // Old snapshots are the wrong size once the backing store above has
+    // been resized, and stale either way once the guide itself changes.
+    this.undoStack.set([]);
 
     const ctx = this.sizeCanvas(guide.nativeElement, width, ROW_HEIGHT);
     ctx.clearRect(0, 0, width, ROW_HEIGHT);
@@ -391,10 +407,18 @@ export class TraceLine {
   onPointerDown(event: PointerEvent): void {
     event.preventDefault();
     this.inkCanvas().nativeElement.setPointerCapture(event.pointerId);
+    this.pushUndoSnapshot();
     this.drawing = true;
     const { x, y } = this.pointerPosition(event);
     this.lastX = x;
     this.lastY = y;
+  }
+
+  private pushUndoSnapshot(): void {
+    const canvas = this.inkCanvas().nativeElement;
+    const snapshot = this.inkContext().getImageData(0, 0, canvas.width, canvas.height);
+    const stack = [...this.undoStack(), snapshot];
+    this.undoStack.set(stack.length > MAX_UNDO_STEPS ? stack.slice(-MAX_UNDO_STEPS) : stack);
   }
 
   onPointerMove(event: PointerEvent): void {
@@ -433,6 +457,21 @@ export class TraceLine {
     const canvas = this.inkCanvas().nativeElement;
     this.inkContext().clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
     this._result.set(null);
+    this.undoStack.set([]);
+  }
+
+  undo(): void {
+    const stack = this.undoStack();
+    if (stack.length === 0) return;
+    const previous = stack[stack.length - 1];
+    const remaining = stack.slice(0, -1);
+    this.undoStack.set(remaining);
+    this.inkContext().putImageData(previous, 0, 0);
+    // The bottom-most snapshot is always the blank canvas (taken before
+    // the first stroke) - undoing back to it is exactly what clear()
+    // does, so match its "no message yet" state rather than computing
+    // and showing a "0% traced" result nobody asked for.
+    this._result.set(remaining.length === 0 ? null : this.computeResult());
   }
 
   // Whether any ink pixel exists within `radius` of (x, y) - a cheap stand-in

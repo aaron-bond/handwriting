@@ -33,6 +33,7 @@
             [value]="word()"
             (input)="word.set($any($event.target).value)"
           />
+          <button type="button" (click)="undo()" [disabled]="!canUndo()">↩️ Undo</button>
           <button type="button" (click)="clear()">🧹 Clear</button>
 
           <label for="cursive" class="checkbox-label">

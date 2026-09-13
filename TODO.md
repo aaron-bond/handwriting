@@ -32,6 +32,28 @@ this file is just the backlog.
       one-pair items were also regrouped into 9 items of 3 pairs each
       ("Aa Bb Cc", ..., "Yy Zz") - the picker helps, but 26 pages of
       near-identical content was the bigger underlying problem.
+- [x] Undo button (↩️, next to Clear - Practice and Custom Word both),
+      from feedback that Clear's "wipe everything" was too blunt for
+      fixing one bad stroke. Ink is a raster with no record of individual
+      strokes, so undo works by snapshotting the whole ink canvas
+      (`getImageData`) just before each stroke starts, and restoring the
+      most recent snapshot (`putImageData`) rather than replaying
+      strokes. Capped at 25 steps (`MAX_UNDO_STEPS` in both
+      `trace-line.ts`/`picture-fill.ts`) since each snapshot is a few MB
+      at device pixel ratio - resets to empty on Clear, on switching
+      items, and on resize (old snapshots would be the wrong size once
+      the ink canvas itself is resized). `PictureFill` needed one more
+      wrinkle TraceLine didn't: a stroke can *complete* the picture, so
+      undoing that stroke has to reverse the completion too (un-set
+      `completed`, redraw the dashed hole) before restoring its ink,
+      not just after - `draw()` resizes (and so clears) the ink canvas
+      as a side effect, which would silently wipe the restored ink if
+      done in the other order. Verified with Playwright: undo reproduces
+      the exact prior canvas bitmap and score after each of several
+      strokes (byte-for-byte via `toDataURL()`), the button's disabled
+      state tracks the stack correctly, and undoing a stroke that
+      completed a picture leaves it dashed/incomplete again with exactly
+      the ink pixel count from just before that stroke.
 
 ## Content / workbooks
 

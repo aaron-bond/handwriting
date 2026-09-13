@@ -38,6 +38,7 @@ export class App {
   // TraceLine recomputes this itself after each stroke - no Check button,
   // no reset-on-navigate wiring needed here, just read it reactively.
   protected readonly feedback = computed(() => this.traceLine()?.result() ?? null);
+  protected readonly canUndo = computed(() => this.traceLine()?.canUndo() ?? false);
 
   // Chrome/Edge fire this exactly when *they've* decided the app meets
   // every install criterion (valid manifest, active service worker, not
@@ -83,5 +84,9 @@ export class App {
 
   clear(): void {
     this.traceLine()?.clear();
+  }
+
+  undo(): void {
+    this.traceLine()?.undo();
   }
 }
