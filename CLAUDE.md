@@ -29,6 +29,21 @@ architecture and the reasoning behind it.
   that branch. A failed deploy with `fatal error in commit_refs` is a
   known transient GitHub-side git backend hiccup, not a code problem -
   just re-run the job.
+- Installable as a PWA (`ng add @angular/pwa`, so a child's tablet gets a
+  home-screen icon and a standalone window instead of a browser tab).
+  `public/manifest.webmanifest` (name/theme/background colour, icon set)
+  and `ngsw-config.json` (service-worker asset caching) are both stock
+  `@angular/pwa` output, hand-edited only for this app's actual name/
+  colours rather than the schematic's Angular-blue defaults;
+  `provideServiceWorker(...)` in `app.config.ts` registers it, disabled
+  in dev mode. iOS ignores the manifest for "Add to Home Screen" branding
+  - `index.html` also carries an `apple-touch-icon` link and
+  `apple-mobile-web-app-*` meta tags pointing at the same icon set for
+  that. The icons themselves (`public/icons/`, replacing the schematic's
+  placeholder Angular logo) are a small pencil-on-blue design rendered
+  from one SVG at each required size via a Playwright screenshot script
+  (ad hoc, not part of the repo) rather than a raster image editor - kept
+  vector until the final rasterization step so every size stays crisp.
 
 ## Screens and data model
 

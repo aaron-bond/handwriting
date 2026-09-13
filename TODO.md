@@ -127,3 +127,25 @@ this file is just the backlog.
       matching the home tiles - same radius, same accent-tinted soft
       shadow via `color-mix()`, using the workbook's `--accent` variable
       already threaded through from the earlier colour pass.
+
+## Platform
+
+- [x] Installable as a PWA, so it gets a home-screen icon and opens in
+      its own standalone window instead of a browser tab - the more
+      natural way for a kid to open "their" app on a shared tablet.
+      `ng add @angular/pwa` for the manifest/service-worker plumbing,
+      then hand-edited the generated manifest (real name/description,
+      this app's blue/pastel theme and background colour rather than
+      Angular's defaults) and replaced the schematic's placeholder
+      Angular-logo icons with a small pencil-on-blue design of our own.
+      Added the `apple-touch-icon`/`apple-mobile-web-app-*` tags iOS
+      needs on top of the manifest, since Safari ignores the manifest for
+      "Add to Home Screen" branding. Verified end-to-end with a real
+      build served from a local static server at the `/handwriting/`
+      base path (matching the GitHub Pages layout): manifest fetches
+      correctly with valid icons, and the service worker reaches
+      `active` with no console errors. Chrome's `beforeinstallprompt`
+      event didn't fire in this headless check - a known Chromium
+      headless-automation quirk, not a sign anything's wrong - so the
+      actual install prompt is still worth eyeballing once on a real
+      device/browser after this ships.
