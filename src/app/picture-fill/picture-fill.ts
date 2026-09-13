@@ -22,19 +22,74 @@ const ROW_HEIGHT = 220;
 const COMPLETE_THRESHOLD = 50;
 const SAMPLE_STRIDE = 4;
 
-export type PictureKind = 'balloon' | 'apple' | 'heart' | 'star' | 'icecream';
+export type PictureKind =
+  | 'balloon'
+  | 'apple'
+  | 'heart'
+  | 'star'
+  | 'icecream'
+  | 'fish'
+  | 'butterfly'
+  | 'rainbow'
+  | 'flower'
+  | 'cupcake'
+  | 'car'
+  | 'boat';
 
 interface PictureDef {
   color: string;
   // Builds the missing piece's path only (moveTo/arc/etc) - the caller
   // decides whether to stroke it dashed (incomplete) or fill it solid
   // (complete), so the same path works for both the visible art and the
-  // hit-testing mask.
+  // hit-testing mask. Can draw more than one sub-path (e.g. two wings,
+  // five petals) to make a multi-piece hole - no separate "list of holes"
+  // plumbing needed, a canvas path already supports disjoint sub-paths
+  // and fill()/stroke() apply to all of them at once. Each sub-path after
+  // the first needs its own explicit moveTo to its start point, or the
+  // browser will draw a stray connecting line from the previous sub-path.
   hole: (ctx: CanvasRenderingContext2D, cx: number, cy: number, size: number) => void;
   // Draws the picture's permanent, already-"coloured" pieces - each a
   // self-contained beginPath+fill/stroke, positioned so they never
-  // overlap the hole (adjacent, not on top of it).
+  // obscure the hole (adjacent, not on top of it - a small deliberate
+  // exception is where two pieces are meant to visually join, like a
+  // flower's petals meeting its center).
   context: (ctx: CanvasRenderingContext2D, cx: number, cy: number, size: number) => void;
+}
+
+// Three overlapping circles for a simple cloud puff - shared by pictures
+// with a sky backdrop.
+function drawCloud(ctx: CanvasRenderingContext2D, x: number, y: number, r: number): void {
+  ctx.fillStyle = '#e7f5ff';
+  ctx.beginPath();
+  ctx.arc(x - r * 0.6, y, r * 0.5, 0, Math.PI * 2);
+  ctx.arc(x, y - r * 0.2, r * 0.65, 0, Math.PI * 2);
+  ctx.arc(x + r * 0.6, y, r * 0.5, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+// A small 4-point twinkle, used as a decorative accent around a few
+// pictures.
+function drawSparkle(ctx: CanvasRenderingContext2D, x: number, y: number, r: number, color: string): void {
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  ctx.moveTo(x, y - r);
+  ctx.lineTo(x + r * 0.25, y - r * 0.25);
+  ctx.lineTo(x + r, y);
+  ctx.lineTo(x + r * 0.25, y + r * 0.25);
+  ctx.lineTo(x, y + r);
+  ctx.lineTo(x - r * 0.25, y + r * 0.25);
+  ctx.lineTo(x - r, y);
+  ctx.lineTo(x - r * 0.25, y - r * 0.25);
+  ctx.closePath();
+  ctx.fill();
+}
+
+// Builds a closed arch-shaped band (like one rainbow stripe) between two
+// radii, from the leftmost point round the top to the rightmost point.
+function ringArchPath(ctx: CanvasRenderingContext2D, cx: number, y: number, outerR: number, innerR: number): void {
+  ctx.arc(cx, y, outerR, Math.PI, 2 * Math.PI);
+  ctx.arc(cx, y, innerR, 2 * Math.PI, Math.PI, true);
+  ctx.closePath();
 }
 
 const PICTURES: Record<PictureKind, PictureDef> = {
@@ -42,6 +97,12 @@ const PICTURES: Record<PictureKind, PictureDef> = {
     color: '#4dabf7',
     hole: (ctx, cx, cy, size) => ctx.arc(cx, cy - size * 0.15, size * 0.32, 0, Math.PI * 2),
     context: (ctx, cx, cy, size) => {
+      ctx.fillStyle = '#ffd43b';
+      ctx.beginPath();
+      ctx.arc(cx - size * 0.62, cy - size * 0.5, size * 0.13, 0, Math.PI * 2);
+      ctx.fill();
+      drawCloud(ctx, cx + size * 0.6, cy - size * 0.48, size * 0.17);
+
       ctx.strokeStyle = '#868e96';
       ctx.lineWidth = 3;
       ctx.beginPath();
@@ -65,6 +126,16 @@ const PICTURES: Record<PictureKind, PictureDef> = {
       ctx.beginPath();
       ctx.ellipse(cx + size * 0.1, cy - size * 0.33, size * 0.09, size * 0.05, -0.6, 0, Math.PI * 2);
       ctx.fill();
+
+      ctx.strokeStyle = '#51cf66';
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      for (const dx of [-0.5, -0.2, 0.2, 0.5]) {
+        ctx.beginPath();
+        ctx.moveTo(cx + size * dx, cy + size * 0.48);
+        ctx.quadraticCurveTo(cx + size * dx + size * 0.03, cy + size * 0.38, cx + size * dx + size * 0.06, cy + size * 0.48);
+        ctx.stroke();
+      }
     },
   },
   heart: {
@@ -92,7 +163,11 @@ const PICTURES: Record<PictureKind, PictureDef> = {
       );
       ctx.bezierCurveTo(cx + size / 2, top, cx, top, cx, top + topCurveHeight);
     },
-    context: () => {},
+    context: (ctx, cx, cy, size) => {
+      drawSparkle(ctx, cx - size * 0.55, cy - size * 0.25, size * 0.06, '#ffe066');
+      drawSparkle(ctx, cx + size * 0.5, cy + size * 0.15, size * 0.05, '#ffe066');
+      drawSparkle(ctx, cx + size * 0.1, cy - size * 0.55, size * 0.045, '#ffe066');
+    },
   },
   star: {
     color: '#ffd43b',
@@ -109,7 +184,11 @@ const PICTURES: Record<PictureKind, PictureDef> = {
       }
       ctx.closePath();
     },
-    context: () => {},
+    context: (ctx, cx, cy, size) => {
+      drawSparkle(ctx, cx - size * 0.65, cy - size * 0.35, size * 0.05, '#fff3bf');
+      drawSparkle(ctx, cx + size * 0.6, cy - size * 0.1, size * 0.04, '#fff3bf');
+      drawSparkle(ctx, cx - size * 0.5, cy + size * 0.4, size * 0.04, '#fff3bf');
+    },
   },
   icecream: {
     color: '#ff8787',
@@ -122,6 +201,231 @@ const PICTURES: Record<PictureKind, PictureDef> = {
       ctx.lineTo(cx, cy + size * 0.45);
       ctx.closePath();
       ctx.fill();
+
+      // A doodle-style face on the cone, below the (still-empty) scoop.
+      ctx.fillStyle = '#5c3a21';
+      ctx.beginPath();
+      ctx.arc(cx - size * 0.08, cy + size * 0.17, size * 0.025, 0, Math.PI * 2);
+      ctx.arc(cx + size * 0.08, cy + size * 0.17, size * 0.025, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#5c3a21';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(cx, cy + size * 0.22, size * 0.06, 0.15 * Math.PI, 0.85 * Math.PI);
+      ctx.stroke();
+    },
+  },
+  fish: {
+    color: '#20c997',
+    hole: (ctx, cx, cy, size) => ctx.ellipse(cx - size * 0.1, cy, size * 0.3, size * 0.2, 0, 0, Math.PI * 2),
+    context: (ctx, cx, cy, size) => {
+      const bodyRightX = cx - size * 0.1 + size * 0.3;
+      ctx.fillStyle = '#0ca678';
+      ctx.beginPath();
+      ctx.moveTo(bodyRightX, cy);
+      ctx.lineTo(bodyRightX + size * 0.22, cy - size * 0.16);
+      ctx.lineTo(bodyRightX + size * 0.22, cy + size * 0.16);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = '#a5d8ff';
+      ctx.beginPath();
+      ctx.arc(cx + size * 0.35, cy - size * 0.45, size * 0.04, 0, Math.PI * 2);
+      ctx.arc(cx + size * 0.45, cy - size * 0.55, size * 0.025, 0, Math.PI * 2);
+      ctx.fill();
+    },
+  },
+  butterfly: {
+    color: '#e599f7',
+    // Two independent wing sub-paths in one hole - the same technique
+    // that lets the star be one path with 10 vertices scales to "more
+    // than one piece", no PictureDef.hole-as-a-list needed.
+    hole: (ctx, cx, cy, size) => {
+      const rx = size * 0.24;
+      const ry = size * 0.34;
+      ctx.moveTo(cx - size * 0.22 + rx, cy);
+      ctx.ellipse(cx - size * 0.22, cy, rx, ry, 0, 0, Math.PI * 2);
+      ctx.moveTo(cx + size * 0.22 + rx, cy);
+      ctx.ellipse(cx + size * 0.22, cy, rx, ry, 0, 0, Math.PI * 2);
+    },
+    context: (ctx, cx, cy, size) => {
+      ctx.fillStyle = '#495057';
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, size * 0.045, size * 0.32, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = '#495057';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - size * 0.3);
+      ctx.quadraticCurveTo(cx - size * 0.08, cy - size * 0.45, cx - size * 0.12, cy - size * 0.5);
+      ctx.moveTo(cx, cy - size * 0.3);
+      ctx.quadraticCurveTo(cx + size * 0.08, cy - size * 0.45, cx + size * 0.12, cy - size * 0.5);
+      ctx.stroke();
+    },
+  },
+  rainbow: {
+    color: '#ffd43b',
+    hole: (ctx, cx, cy, size) => ringArchPath(ctx, cx, cy + size * 0.35, size * 0.5, size * 0.38),
+    context: (ctx, cx, cy, size) => {
+      const y = cy + size * 0.35;
+      ctx.fillStyle = '#ff8787';
+      ctx.beginPath();
+      ringArchPath(ctx, cx, y, size * 0.62, size * 0.5);
+      ctx.fill();
+      ctx.fillStyle = '#69db7c';
+      ctx.beginPath();
+      ringArchPath(ctx, cx, y, size * 0.38, size * 0.26);
+      ctx.fill();
+
+      drawCloud(ctx, cx - size * 0.6, y - size * 0.02, size * 0.15);
+      drawCloud(ctx, cx + size * 0.6, y - size * 0.02, size * 0.15);
+    },
+  },
+  flower: {
+    color: '#e64980',
+    // Five petal sub-paths, each given its own moveTo so the browser
+    // doesn't stitch a stray line from one petal to the next.
+    hole: (ctx, cx, cy, size) => {
+      const r = size * 0.2;
+      const dist = size * 0.26;
+      for (let i = 0; i < 5; i++) {
+        const angle = ((Math.PI * 2) / 5) * i - Math.PI / 2;
+        const px = cx + dist * Math.cos(angle);
+        const py = cy + dist * Math.sin(angle);
+        ctx.moveTo(px + r, py);
+        ctx.arc(px, py, r, 0, Math.PI * 2);
+      }
+    },
+    context: (ctx, cx, cy, size) => {
+      // Deliberately drawn under the petals (rather than kept clear of
+      // them, unlike every other picture's context) - a flower's center
+      // is meant to show through where the petals meet it.
+      ctx.fillStyle = '#ffd43b';
+      ctx.beginPath();
+      ctx.arc(cx, cy, size * 0.13, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = '#51cf66';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy + size * 0.48);
+      ctx.lineTo(cx, cy + size * 0.75);
+      ctx.stroke();
+
+      ctx.fillStyle = '#51cf66';
+      ctx.beginPath();
+      ctx.ellipse(cx + size * 0.13, cy + size * 0.58, size * 0.1, size * 0.05, -0.5, 0, Math.PI * 2);
+      ctx.fill();
+    },
+  },
+  cupcake: {
+    color: '#f783ac',
+    // Frosting swirl (three overlapping blobs) plus a cherry - another
+    // multi-piece hole, all filled/scored as one unit.
+    hole: (ctx, cx, cy, size) => {
+      ctx.moveTo(cx - size * 0.16 + size * 0.17, cy - size * 0.05);
+      ctx.arc(cx - size * 0.16, cy - size * 0.05, size * 0.17, 0, Math.PI * 2);
+      ctx.moveTo(cx + size * 0.16 + size * 0.17, cy - size * 0.05);
+      ctx.arc(cx + size * 0.16, cy - size * 0.05, size * 0.17, 0, Math.PI * 2);
+      ctx.moveTo(cx + size * 0.15, cy - size * 0.3);
+      ctx.arc(cx, cy - size * 0.3, size * 0.15, 0, Math.PI * 2);
+      ctx.moveTo(cx + size * 0.06, cy - size * 0.42);
+      ctx.arc(cx, cy - size * 0.42, size * 0.06, 0, Math.PI * 2);
+    },
+    context: (ctx, cx, cy, size) => {
+      ctx.fillStyle = '#e8590c';
+      ctx.beginPath();
+      ctx.moveTo(cx - size * 0.24, cy + size * 0.14);
+      ctx.lineTo(cx + size * 0.24, cy + size * 0.14);
+      ctx.lineTo(cx + size * 0.15, cy + size * 0.4);
+      ctx.lineTo(cx - size * 0.15, cy + size * 0.4);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.strokeStyle = '#fff3bf';
+      ctx.lineWidth = 2;
+      for (const dx of [-0.14, -0.05, 0.05, 0.14]) {
+        ctx.beginPath();
+        ctx.moveTo(cx + size * dx * 1.4, cy + size * 0.16);
+        ctx.lineTo(cx + size * dx, cy + size * 0.38);
+        ctx.stroke();
+      }
+    },
+  },
+  car: {
+    color: '#e03131',
+    hole: (ctx, cx, cy, size) => {
+      const w = size * 0.9;
+      const h = size * 0.36;
+      const x = cx - w / 2;
+      const y = cy - h / 2 + size * 0.05;
+      const r = size * 0.08;
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.arcTo(x + w, y, x + w, y + r, r);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+      ctx.lineTo(x + r, y + h);
+      ctx.arcTo(x, y + h, x, y + h - r, r);
+      ctx.lineTo(x, y + r);
+      ctx.arcTo(x, y, x + r, y, r);
+      ctx.closePath();
+    },
+    context: (ctx, cx, cy, size) => {
+      const h = size * 0.36;
+      const bodyTop = cy - h / 2 + size * 0.05;
+      const bodyBottom = bodyTop + h;
+
+      ctx.fillStyle = '#a5d8ff';
+      ctx.beginPath();
+      ctx.moveTo(cx - size * 0.22, bodyTop);
+      ctx.lineTo(cx - size * 0.14, bodyTop - size * 0.18);
+      ctx.lineTo(cx + size * 0.14, bodyTop - size * 0.18);
+      ctx.lineTo(cx + size * 0.22, bodyTop);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.fillStyle = '#343a40';
+      ctx.beginPath();
+      ctx.arc(cx - size * 0.28, bodyBottom, size * 0.09, 0, Math.PI * 2);
+      ctx.arc(cx + size * 0.28, bodyBottom, size * 0.09, 0, Math.PI * 2);
+      ctx.fill();
+    },
+  },
+  boat: {
+    color: '#ff922b',
+    hole: (ctx, cx, cy, size) => {
+      ctx.moveTo(cx - size * 0.4, cy + size * 0.15);
+      ctx.lineTo(cx + size * 0.4, cy + size * 0.15);
+      ctx.lineTo(cx + size * 0.25, cy + size * 0.4);
+      ctx.lineTo(cx - size * 0.25, cy + size * 0.4);
+      ctx.closePath();
+    },
+    context: (ctx, cx, cy, size) => {
+      ctx.strokeStyle = '#8d6748';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy + size * 0.15);
+      ctx.lineTo(cx, cy - size * 0.4);
+      ctx.stroke();
+
+      ctx.fillStyle = '#ffd43b';
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - size * 0.4);
+      ctx.lineTo(cx + size * 0.32, cy + size * 0.1);
+      ctx.lineTo(cx, cy + size * 0.1);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.strokeStyle = '#4dabf7';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(cx - size * 0.55, cy + size * 0.45);
+      ctx.quadraticCurveTo(cx - size * 0.4, cy + size * 0.38, cx - size * 0.25, cy + size * 0.45);
+      ctx.quadraticCurveTo(cx - size * 0.1, cy + size * 0.52, cx + size * 0.05, cy + size * 0.45);
+      ctx.quadraticCurveTo(cx + size * 0.2, cy + size * 0.38, cx + size * 0.35, cy + size * 0.45);
+      ctx.stroke();
     },
   },
 };

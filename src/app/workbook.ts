@@ -130,6 +130,19 @@ export const WORKBOOKS: Workbook[] = [
     // A different interaction model from every other workbook - colour
     // in the missing piece (any reasonable attempt, not a precise trace)
     // and it reveals a solid-colour fill. See picture-fill.ts.
-    items: pictures(['balloon', 'apple', 'heart', 'star', 'icecream']),
+    items: pictures([
+      'balloon',
+      'apple',
+      'heart',
+      'star',
+      'icecream',
+      'fish',
+      'butterfly',
+      'rainbow',
+      'flower',
+      'cupcake',
+      'car',
+      'boat',
+    ]),
   },
 ];

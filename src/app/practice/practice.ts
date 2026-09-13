@@ -28,6 +28,13 @@ const PICTURE_ICONS: Record<PictureKind, string> = {
   heart: '❤️',
   star: '⭐',
   icecream: '🍦',
+  fish: '🐟',
+  butterfly: '🦋',
+  rainbow: '🌈',
+  flower: '🌸',
+  cupcake: '🧁',
+  car: '🚗',
+  boat: '⛵',
 };
 
 @Component({

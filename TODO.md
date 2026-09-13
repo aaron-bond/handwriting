@@ -79,19 +79,26 @@ this file is just the backlog.
       immediately undid every completion right after `onPointerUp` set
       it, wiping the ink and message with no visible error. Fixed with
       `untracked()` around the writes/redraw.
-- [ ] "Complete the Picture" has gone down well with actual kids testing
-      it - worth investing further. Two directions: (1) more detail per
-      picture - right now each is just one hole plus 0-2 simple adjacent
-      context pieces (a string, a stem+leaf, a cone); could add more
-      context pieces per picture (e.g. clouds/sun behind the balloon,
-      grass under the tree in Doodles-style compositions, a face on the
-      ice-cream cone) for a richer scene, and/or multiple holes per
-      picture (colour in several pieces to complete one bigger scene,
-      rather than always a single hole). (2) more pictures - candidates:
-      fish, butterfly, rainbow, flower, cupcake, car, boat. Both are
-      additive to `PICTURES`/`PictureDef` in `picture-fill.ts` - worth
-      checking first whether multiple holes needs `PictureDef.hole` to
-      become a list rather than a single path function.
+- [x] "Complete the Picture" has gone down well with actual kids testing
+      it - invested further in both planned directions. (1) More detail:
+      balloon gained a sun + cloud backdrop, apple gained grass tufts,
+      icecream gained a doodle-style face on the cone, and heart/star
+      gained small sparkle accents - all via `context()`, no architecture
+      change. (2) More pictures: fish, butterfly, rainbow, flower,
+      cupcake, car, boat (12 total now). Resolved the open question from
+      this item's first draft: `PictureDef.hole` did *not* need to become
+      a list for multi-piece holes (butterfly's two wings, cupcake's
+      frosting+cherry, flower's five petals) - a hole's path can already
+      contain several disjoint sub-paths (same trick `star`'s 10-vertex
+      path already used), and `fill()`/`stroke()`/the mask readback all
+      operate on the whole path regardless of how many sub-paths it has.
+      The one gotcha: every sub-path after the first needs its own
+      explicit `moveTo` to its own start point, or the canvas silently
+      draws a connecting line from the previous sub-path's end point
+      (harmless for fill, but a visible stray diagonal in the dashed
+      incomplete state). Verified all 12 pictures via the Playwright
+      scribble-to-completion check - every one reaches the >=50%
+      threshold and shows the celebration message.
 
 ## Visual design
 
