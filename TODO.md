@@ -1,5 +1,8 @@
 # Todo
 
+See `CLAUDE.md` for the app's architecture and the reasoning behind it -
+this file is just the backlog.
+
 ## Core tracing experience
 
 - [x] Capture and score the child's strokes against the guide letters, to
