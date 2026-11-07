@@ -190,6 +190,16 @@ this file is just the backlog.
       only, 1.5x crayon width, so it can rub out colouring but never the
       outlines or the faded joining ink (separate canvases). Erasing is
       an ordinary stroke for Undo.
+- [x] "📷 Save picture" button on a finished Connect the Dots page
+      (bottom-left of the card, clear of the drawer). Flattens the layers
+      exactly as shown - colouring, outlines, faded joining ink at the
+      same 0.3 opacity (`FADED_INK_OPACITY`, kept in sync with the CSS) -
+      onto white, crops to the bounding box of everything drawn
+      (colouring over the lines included) plus a 24px margin, and
+      downloads it as `connect-the-dots-<picture>-<date>.png` at device
+      resolution. Plain `<a download>`; on iPad Safari that lands in
+      Files rather than Photos - Web Share (`navigator.share` with a
+      file) would offer "Save Image" there, worth adding if parents ask.
 
 ## Visual design
 

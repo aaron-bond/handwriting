@@ -16,6 +16,8 @@
     ></canvas>
 
     @if (completed()) {
+      <button type="button" class="save-picture" (click)="savePicture()">📷 Save picture</button>
+
       <div class="palette" [class.palette--open]="paletteOpen()">
         <button
           type="button"

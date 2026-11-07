@@ -14,7 +14,8 @@
 }
 
 /* The child's own strokes, once a bold snapped line has replaced them -
-   still visible, just stepped back. */
+   still visible, just stepped back. Keep in sync with FADED_INK_OPACITY
+   in connect-dots.ts. */
 .faded-ink {
   opacity: 0.3;
 }
@@ -139,4 +140,26 @@
 .palette:not(.palette--open) .palette-swatches {
   visibility: hidden;
   transition: visibility 0s 0.3s;
+}
+
+/* Bottom-left of the page, clear of the drawer on the right. */
+.save-picture {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 16px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--accent, var(--color-primary));
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.save-picture:hover {
+  background: var(--accent-dark, var(--color-primary-dark));
+  transform: translateY(-1px);
 }

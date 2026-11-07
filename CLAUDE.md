@@ -166,7 +166,9 @@ lifts) and `ink` (the stroke in progress, and the pointer target). Once
 complete, the same pen colours instead: a slide-out palette drawer picks
 the colour, and strokes go straight onto `paint`. Colouring is
 deliberately neither clipped to the outline nor ever replaced by a fill -
-the child's own strokes *are* the finished picture. Dot labels (numbers/
+the child's own strokes *are* the finished picture. "Save picture" flattens the
+layers (recreating `fadedInk`'s CSS opacity in code - keep the two in
+sync) onto white, crops to what's drawn, and downloads a PNG. Dot labels (numbers/
 letters) come from a `labels` input backed by `App`'s shared `dotLabels`
 signal, like `cursive`. jsdom has no canvas or `Path2D`, so nothing
 canvas-related may run before the first real layout (`width === 0`

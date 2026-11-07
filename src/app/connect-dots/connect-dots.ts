@@ -28,6 +28,11 @@ const LINE_WIDTH = 6;
 const DETAIL_WIDTH = 3;
 const LINE_COLOR = '#343a40';
 const INK_COLOR = '#5c7cfa';
+// Keep in sync with .faded-ink's opacity in connect-dots.css - Save
+// picture recreates that look when flattening the layers.
+const FADED_INK_OPACITY = 0.3;
+// Margin (CSS px) left around the drawing in a saved picture.
+const SAVE_MARGIN = 24;
 // See TraceLine's MAX_UNDO_STEPS - same "whole canvas per snapshot" cost.
 const MAX_UNDO_STEPS = 25;
 
@@ -639,6 +644,62 @@ export class ConnectDots {
     ctx.lineTo(x, y);
     ctx.stroke();
     ctx.globalCompositeOperation = 'source-over';
+  }
+
+  // Downloads the finished picture as a PNG: the layers flattened exactly
+  // as shown (colouring, outlines, faded joining ink) on white, cropped to
+  // whatever's actually drawn - colouring over the lines included - plus
+  // a small margin, rather than the whole wide, mostly empty page.
+  protected savePicture(): void {
+    const paint = this.paintCanvas().nativeElement;
+    const { width, height } = paint;
+    const merged = document.createElement('canvas');
+    merged.width = width;
+    merged.height = height;
+    const ctx = merged.getContext('2d')!;
+    ctx.drawImage(paint, 0, 0);
+    ctx.drawImage(this.artCanvas().nativeElement, 0, 0);
+    ctx.globalAlpha = FADED_INK_OPACITY;
+    ctx.drawImage(this.fadedInkCanvas().nativeElement, 0, 0);
+    ctx.globalAlpha = 1;
+
+    const alpha = ctx.getImageData(0, 0, width, height).data;
+    let [left, top, right, bottom] = [width, height, -1, -1];
+    for (let y = 0; y < height; y++) {
+      for (let x = 0; x < width; x++) {
+        if (alpha[(y * width + x) * 4 + 3] === 0) continue;
+        if (x < left) left = x;
+        if (x > right) right = x;
+        if (y < top) top = y;
+        if (y > bottom) bottom = y;
+      }
+    }
+    if (right < 0) return; // nothing drawn at all
+    const margin = SAVE_MARGIN * (window.devicePixelRatio || 1);
+    left = Math.max(0, left - margin);
+    top = Math.max(0, top - margin);
+    right = Math.min(width - 1, right + margin);
+    bottom = Math.min(height - 1, bottom + margin);
+
+    const out = document.createElement('canvas');
+    out.width = right - left + 1;
+    out.height = bottom - top + 1;
+    const outCtx = out.getContext('2d')!;
+    outCtx.fillStyle = '#fff';
+    outCtx.fillRect(0, 0, out.width, out.height);
+    outCtx.drawImage(merged, left, top, out.width, out.height, 0, 0, out.width, out.height);
+
+    const date = new Date().toISOString().slice(0, 10);
+    out.toBlob((blob) => {
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `connect-the-dots-${this.picture()}-${date}.png`;
+      link.click();
+      // Give the browser a moment to start the download before revoking.
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }, 'image/png');
   }
 
   protected togglePalette(): void {
