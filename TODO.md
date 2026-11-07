@@ -172,6 +172,12 @@ this file is just the backlog.
       happened when the dots were joined. Known gap, shared with the
       other activities: a resize/rotation wipes the drawing - only
       worth fixing if it draws complaints.
+- [x] Eraser for the colouring page (from trying it live) - a 🧽 button
+      as a full-width row under the drawer's colours, picked the same
+      way as a colour. Draws with `destination-out` on the paint layer
+      only, 1.5x crayon width, so it can rub out colouring but never the
+      outlines or the faded joining ink (separate canvases). Erasing is
+      an ordinary stroke for Undo.
 
 ## Visual design
 

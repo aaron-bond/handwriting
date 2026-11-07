@@ -45,6 +45,9 @@ export const PAINT_COLOURS: { name: string; value: string }[] = [
   { name: 'Black', value: '#343a40' },
 ];
 
+// Picked in the drawer like a colour, but rubs colouring out instead.
+export const ERASER = 'eraser';
+
 export type DotLabelMode = 'numbers' | 'letters';
 
 export type DotsKind = 'star' | 'house' | 'fish' | 'boat' | 'heart' | 'rocket' | 'tree';
@@ -368,6 +371,8 @@ export class ConnectDots {
   });
 
   protected readonly paintColours = PAINT_COLOURS;
+  protected readonly eraser = ERASER;
+  // A colour value, or ERASER.
   protected readonly paintColour = signal(PAINT_COLOURS[0].value);
   // The colouring drawer starts tucked away - only its handle shows once
   // the picture is finished, for the child to pull out.
@@ -558,14 +563,22 @@ export class ConnectDots {
   private paintSegment(x: number, y: number, event: PointerEvent): void {
     const ctx = this.paintCanvas().nativeElement.getContext('2d')!;
     const isPen = event.pointerType === 'pen';
-    ctx.strokeStyle = this.paintColour();
-    ctx.lineWidth = isPen ? Math.max(8, event.pressure * 28) : 20;
+    const erasing = this.paintColour() === ERASER;
+    // The eraser only ever touches the paint layer - outlines and the
+    // faded joining ink live on other canvases, so they can't be rubbed
+    // out by accident. destination-out clears wherever it "draws".
+    ctx.globalCompositeOperation = erasing ? 'destination-out' : 'source-over';
+    ctx.strokeStyle = erasing ? '#000' : this.paintColour();
+    // A bit wider than a crayon, so rubbing out is quick.
+    const width = isPen ? Math.max(8, event.pressure * 28) : 20;
+    ctx.lineWidth = erasing ? width * 1.5 : width;
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.beginPath();
     ctx.moveTo(this.lastX, this.lastY);
     ctx.lineTo(x, y);
     ctx.stroke();
+    ctx.globalCompositeOperation = 'source-over';
   }
 
   protected togglePalette(): void {

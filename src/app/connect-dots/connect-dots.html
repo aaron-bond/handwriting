@@ -39,6 +39,16 @@
               (click)="pickColour(colour.value)"
             ></button>
           }
+          <button
+            type="button"
+            class="eraser"
+            [class.swatch--active]="paintColour() === eraser"
+            aria-label="Eraser"
+            [attr.aria-pressed]="paintColour() === eraser"
+            (click)="pickColour(eraser)"
+          >
+            🧽
+          </button>
         </div>
       </div>
     }
