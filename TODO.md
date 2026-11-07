@@ -121,58 +121,57 @@ this file is just the backlog.
       incomplete state). Verified all 12 pictures via the Playwright
       scribble-to-completion check - every one reaches the >=50%
       threshold and shows the celebration message.
-- [ ] "Connect the Dots" art pages (requested) - numbered dots that the
-      child joins in order with the pen, revealing a picture once the
-      last dot connects. Planned shape, open to change once built:
-      - **Its own component** (e.g. `ConnectDots`, new `PracticeItem`
-        kind `'dots'`), like `PictureFill` was - a third interaction
-        model (follow a sequence) rather than a TraceLine mode.
-      - **Hit-testing by geometry, not pixel masks** - dots are just
-        points, so "did the pen reach dot N+1" is a distance check
-        from the pointer to the next dot's centre (generous radius for
-        small hands). No off-screen mask canvases needed.
-      - **Forgiving progress**: only the *next* dot counts; touching
-        any other dot does nothing (no error state). Highlight/pulse
-        the next dot so they're never stuck hunting.
-      - **Decided: snap to a strong line, keep their ink faded** - as
-        each next dot is reached, draw a clean bold straight segment
-        from the previous dot, and fade (not erase) the child's own
-        freehand stroke underneath. The finished picture looks "nice"
-        (the point of the request) while their effort stays visible.
-      - **Reveal on completion** - reuse PictureFill's pattern: soft
-        fill colour plus optional permanent `context()` decoration
-        (sun, grass, etc.) and the same fixed celebration result
-        (coverage 100 → `.feedback--celebrate`).
-      - **Undo becomes discrete** - progress is just "how many dots
-        connected", so undo can step that index back rather than
-        snapshotting raster ink (unless freehand ink is kept, in which
-        case reuse the snapshot stack).
-      - **Content**: each picture is an ordered list of points in a
-        normalized coordinate space (like PictureFill's paths), plus
-        label offsets so numbers don't collide with lines. Start ~8-15
-        dots for young kids (star, house, fish, boat, heart, rocket,
-        cat face...). Multi-stroke pictures (e.g. a cat's whiskers)
-        would need several sequences per picture - defer until a
-        single-outline set has been kid-tested.
-      - **On-screen Numbers / Letters toggle** (in the Practice
-        controls, like the Cursive checkbox is for text items): label
-        dots 1, 2, 3... or A, B, C... - letter order doubles as
-        alphabet practice. Labels only, same dot sequence either way,
-        so it's a pure rendering switch. Caps a picture at 26 dots in
-        letter mode (fine at the planned 8-15). Probably shared across
-        pictures/screens like `cursive` rather than reset per item.
-        Skip-counting (2, 4, 6...) could be a later third option.
-- [ ] Colour in a finished Connect the Dots picture (follow-on to the
-      item above) - once every dot is joined, the enclosed outline
-      becomes a colouring area instead of jumping straight to a fixed
-      reveal: the child picks a colour and fills it in freehand, with
-      ink clipped to the shape so scribbles stay inside the lines.
-      Likely reuses PictureFill's machinery (the joined outline *is* a
-      hole path; >=50% area coverage → celebration). Open questions: a
-      small colour palette vs. one fixed colour per picture; and
-      whether the auto-reveal fill from the base item goes away once
-      this exists, or stays as the reward for kids who just want to
-      join dots.
+- [x] "Connect the Dots" art pages (requested) - new `ConnectDots`
+      component (`PracticeItem` kind `'dots'`, its own workbook: star,
+      house, fish, boat, heart, rocket, tree, 8-16 dots each). A third
+      interaction model (follow a sequence), so its own component rather
+      than a TraceLine/PictureFill mode. As built:
+      - **Hit-testing by geometry** - distance from the pen's *segment*
+        (not just its latest point, so a fast stroke can't skip over a
+        dot) to the next dot's centre, 24px radius. Only the next dot
+        counts; one sweeping stroke can join several in a row. A
+        pulsing DOM ring (CSS animation, no canvas redraw loop) marks
+        the next dot.
+      - **Snap to a strong line, keep their ink faded** - the stroke in
+        progress draws on one canvas, and is copied onto a second canvas
+        with CSS `opacity: 0.3` the moment it reaches a dot or the pen
+        lifts; the bold straight segment is drawn on the art layer.
+      - **Numbers / Letters toggle** ("1 2 3 | A B C" segmented control
+        in Practice's controls, only for dots items). Lives on `App`
+        like `cursive`, so it sticks across pictures. Pure label
+        switch; pictures stay at <=26 dots so letters never run out.
+      - **Label placement** - each label sits on the outward bisector
+        of the angle its two outline neighbours make, so it never lands
+        on its own dot's lines. The first try (push away from the
+        picture's centre) put labels on lines at every concave corner,
+        e.g. inside the house's chimney. Heart points are hand-placed:
+        sampling the parametric heart curve evenly bunched dots at the
+        top dip and bottom tip.
+      - **Completion leaves blank line art, not a colour reveal** -
+        changed from the plan once seen: pre-colouring the picture left
+        the child nothing to do. Details (windows, eye, ornaments...)
+        appear as thin outlines, plus a few dividing lines (deck, nose
+        cone, trunk) to make separate areas to colour. Same fixed
+        celebration result as PictureFill (coverage 100).
+      - **Undo** stays per-stroke and raster-based (dots-reached count
+        plus faded-ink and paint snapshots), since the freehand ink is
+        kept. Undoing a colouring stroke keeps the picture finished.
+      - Multi-stroke pictures (e.g. a cat's whiskers) and skip-counting
+        labels (2, 4, 6...) are still unbuilt - wait for kid feedback.
+- [x] Colour in a finished Connect the Dots picture - once the last dot
+      is joined, a 🎨 handle (with a periodic wiggle so it's noticed)
+      appears on the card's right edge; tapping it slides out a drawer
+      of 10 big colour swatches. The pen switches from joining to
+      painting: thick crayon-like strokes (pressure-sensitive for a pen)
+      on their own canvas *under* the line art, so outlines stay crisp
+      on top. Decided against both ideas in this item's first draft:
+      colouring is **not clipped** to the outline (going over the lines
+      is half the fun), and it's **never replaced by a solid fill** at
+      any point - the child's own strokes are the finished picture. No
+      coverage threshold or extra scoring; the celebration already
+      happened when the dots were joined. Known gap, shared with the
+      other activities: a resize/rotation wipes the drawing - only
+      worth fixing if it draws complaints.
 
 ## Visual design
 

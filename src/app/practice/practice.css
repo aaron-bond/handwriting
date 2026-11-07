@@ -41,3 +41,33 @@
   border-color: var(--accent);
   color: #fff;
 }
+
+/* Numbers/Letters toggle for Connect the Dots - two joined pills, the
+   chosen one filled in the accent colour. Readable without reading. */
+.segmented {
+  display: flex;
+}
+
+.controls .segmented button {
+  background: var(--color-surface);
+  color: var(--accent-dark);
+  border: 2px solid var(--accent);
+}
+
+.controls .segmented button:first-child {
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+}
+
+.controls .segmented button:last-child {
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  border-left: none;
+}
+
+.controls .segmented button.segmented--active {
+  background: var(--accent);
+  color: #fff;
+}
+
+.controls .segmented button:not(.segmented--active):hover {
+  background: var(--accent-soft);
+}

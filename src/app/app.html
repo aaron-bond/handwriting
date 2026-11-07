@@ -63,6 +63,8 @@
           [workbook]="workbook"
           [cursive]="cursive()"
           (cursiveChange)="cursive.set($event)"
+          [dotLabels]="dotLabels()"
+          (dotLabelsChange)="dotLabels.set($event)"
           (back)="goHome()"
         />
       }

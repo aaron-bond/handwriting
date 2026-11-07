@@ -27,6 +27,27 @@
         Cursive
       </label>
     }
+
+    @if (item().kind === 'dots') {
+      <div class="segmented" role="group" aria-label="Dot labels">
+        <button
+          type="button"
+          [class.segmented--active]="dotLabels() === 'numbers'"
+          [attr.aria-pressed]="dotLabels() === 'numbers'"
+          (click)="dotLabelsChange.emit('numbers')"
+        >
+          1 2 3
+        </button>
+        <button
+          type="button"
+          [class.segmented--active]="dotLabels() === 'letters'"
+          [attr.aria-pressed]="dotLabels() === 'letters'"
+          (click)="dotLabelsChange.emit('letters')"
+        >
+          A B C
+        </button>
+      </div>
+    }
   </div>
 
   <div class="picker">
@@ -44,6 +65,8 @@
 
   @if (item().kind === 'picture') {
     <app-picture-fill [picture]="pictureValue()!" />
+  } @else if (item().kind === 'dots') {
+    <app-connect-dots [picture]="dotsValue()!" [labels]="dotLabels()" />
   } @else {
     <app-trace-line [text]="textValue()" [shape]="shapeValue()" [cursive]="cursive()" />
   }

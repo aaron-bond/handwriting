@@ -1,10 +1,12 @@
+import { DotsKind } from './connect-dots/connect-dots';
 import { PictureKind } from './picture-fill/picture-fill';
 import { ShapeKind } from './trace-line/trace-line';
 
 export type PracticeItem =
   | { kind: 'text'; value: string }
   | { kind: 'shape'; value: ShapeKind }
-  | { kind: 'picture'; value: PictureKind };
+  | { kind: 'picture'; value: PictureKind }
+  | { kind: 'dots'; value: DotsKind };
 
 // A workbook's colour theme, bound as CSS custom properties (--accent/
 // --accent-dark/--accent-soft) on that workbook's tile/screen so one set
@@ -42,6 +44,10 @@ function shapes(values: ShapeKind[]): PracticeItem[] {
 
 function pictures(values: PictureKind[]): PracticeItem[] {
   return values.map((value) => ({ kind: 'picture', value }));
+}
+
+function dots(values: DotsKind[]): PracticeItem[] {
+  return values.map((value) => ({ kind: 'dots', value }));
 }
 
 function chunk<T>(values: T[], size: number): T[][] {
@@ -144,5 +150,15 @@ export const WORKBOOKS: Workbook[] = [
       'car',
       'boat',
     ]),
+  },
+  {
+    id: 'connect-the-dots',
+    title: 'Connect the Dots',
+    icon: '✏️',
+    itemLabel: 'pictures',
+    color: { accent: '#748ffc', accentDark: '#4263eb', accentSoft: '#dbe4ff' },
+    // Join numbered (or lettered) dots in order to reveal a picture - a
+    // third interaction model, follow-a-sequence. See connect-dots.ts.
+    items: dots(['star', 'house', 'fish', 'boat', 'heart', 'rocket', 'tree']),
   },
 ];

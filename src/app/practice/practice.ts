@@ -1,4 +1,5 @@
 import { Component, computed, input, output, signal, viewChild } from '@angular/core';
+import { ConnectDots, DotLabelMode, DotsKind } from '../connect-dots/connect-dots';
 import { PictureFill, PictureKind } from '../picture-fill/picture-fill';
 import { ShapeKind, TraceLine } from '../trace-line/trace-line';
 import { PracticeItem, Workbook } from '../workbook';
@@ -37,9 +38,19 @@ const PICTURE_ICONS: Record<PictureKind, string> = {
   boat: '⛵',
 };
 
+const DOTS_ICONS: Record<DotsKind, string> = {
+  star: '⭐',
+  house: '🏠',
+  fish: '🐟',
+  boat: '⛵',
+  heart: '❤️',
+  rocket: '🚀',
+  tree: '🎄',
+};
+
 @Component({
   selector: 'app-practice',
-  imports: [TraceLine, PictureFill],
+  imports: [TraceLine, PictureFill, ConnectDots],
   templateUrl: './practice.html',
   styleUrl: './practice.css',
 })
@@ -47,7 +58,10 @@ export class Practice {
   readonly workbook = input.required<Workbook>();
   readonly cursive = input.required<boolean>();
 
+  readonly dotLabels = input<DotLabelMode>('numbers');
+
   readonly cursiveChange = output<boolean>();
+  readonly dotLabelsChange = output<DotLabelMode>();
   readonly back = output<void>();
 
   protected readonly index = signal(0);
@@ -74,6 +88,11 @@ export class Practice {
     return current.kind === 'picture' ? current.value : null;
   });
 
+  protected readonly dotsValue = computed<DotsKind | null>(() => {
+    const current = this.item();
+    return current.kind === 'dots' ? current.value : null;
+  });
+
   // Singularized, capitalized form of the workbook's plural itemLabel
   // ("words" -> "Word") for the "Word X of Y" progress line.
   protected readonly itemLabel = computed(() => {
@@ -83,15 +102,17 @@ export class Practice {
   });
 
   // Only one of these is ever actually in the template at a time
-  // (@if on item().kind), so both are optional - feedback/clear() below
-  // just read/call whichever one exists.
+  // (@if on item().kind), so all are optional - `activity` is whichever
+  // one exists, and feedback/undo/clear just go through it.
   private readonly traceLine = viewChild(TraceLine);
   private readonly pictureFill = viewChild(PictureFill);
+  private readonly connectDots = viewChild(ConnectDots);
 
   // Both recompute their own result after each stroke - no Check button,
   // no reset-on-navigate wiring needed here, just read it reactively.
-  protected readonly feedback = computed(() => this.traceLine()?.result() ?? this.pictureFill()?.result() ?? null);
-  protected readonly canUndo = computed(() => this.traceLine()?.canUndo() ?? this.pictureFill()?.canUndo() ?? false);
+  private readonly activity = computed(() => this.traceLine() ?? this.pictureFill() ?? this.connectDots());
+  protected readonly feedback = computed(() => this.activity()?.result() ?? null);
+  protected readonly canUndo = computed(() => this.activity()?.canUndo() ?? false);
 
   previous(): void {
     if (this.canGoPrevious()) this.index.update((i) => i - 1);
@@ -106,13 +127,11 @@ export class Practice {
   }
 
   clear(): void {
-    this.traceLine()?.clear();
-    this.pictureFill()?.clear();
+    this.activity()?.clear();
   }
 
   undo(): void {
-    this.traceLine()?.undo();
-    this.pictureFill()?.undo();
+    this.activity()?.undo();
   }
 
   // Picker-pill label for an arbitrary item, not just the current one
@@ -121,6 +140,7 @@ export class Practice {
   pickerLabel(item: PracticeItem): string {
     if (item.kind === 'text') return item.value;
     if (item.kind === 'shape') return SHAPE_ICONS[item.value];
+    if (item.kind === 'dots') return DOTS_ICONS[item.value];
     return PICTURE_ICONS[item.value];
   }
 }

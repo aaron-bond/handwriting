@@ -82,19 +82,20 @@ architecture and the reasoning behind it.
   progress ("Word 3 of 10"), an item picker (tappable pills, jump to any
   item), Previous/Next (bare arrow icons - the picker is the primary
   navigation now), Undo, Clear, and a Cursive checkbox (only for text
-  items). Renders `<app-trace-line>` or `<app-picture-fill>` depending on
-  the current item's `kind`.
+  items). Renders `<app-trace-line>`, `<app-picture-fill>` or
+  `<app-connect-dots>` depending on the current item's `kind` (plus a
+  "1 2 3 | A B C" label toggle for dots items).
 - `src/app/workbook.ts` - `Workbook { id, title, icon, itemLabel, color,
   items }`. `PracticeItem` is a union: `{kind:'text', value: string} |
   {kind:'shape', value: ShapeKind} | {kind:'picture', value:
-  PictureKind}`. `color` (`accent`/`accentDark`/`accentSoft`) is bound as
-  CSS custom properties on that workbook's tile and practice screen, so
+  PictureKind} | {kind:'dots', value: DotsKind}`. `color` (`accent`/
+  `accentDark`/`accentSoft`) is bound as CSS custom properties on that workbook's tile and practice screen, so
   one set of shared CSS rules (buttons, feedback text, the tracing card's
   shadow) renders every workbook in its own colour via `var(--accent,
   var(--color-primary))` fallbacks - Home/Custom Word have no `--accent`
   set and fall back to the base blue.
 
-## The two tracing/activity components
+## The tracing/activity components
 
 **`src/app/trace-line/trace-line.ts`** - precision tracing (words,
 letters, sums, shapes, doodles). The core trick, used throughout: render
@@ -152,6 +153,24 @@ ink. `undo()` un-sets `completed` and calls `draw()` (which redraws the
 dashed hole) *before* restoring the snapshot, since `draw()` resizes -
 and so clears - the ink canvas as a side effect, which would otherwise
 wipe out the just-restored ink if done in the other order.
+
+**`src/app/connect-dots/connect-dots.ts`** - "Connect the Dots": a third
+interaction model, follow-a-sequence. Each picture (`DOTS`) is an ordered
+list of outline points in a 0-100 box plus optional line-art `details`,
+mapped onto a 460px-tall page. Reaching dots is a geometry check (distance
+from each pointer *segment* to the next dot), not a pixel mask. Four
+stacked canvases, bottom to top: `paint` (colouring), `art` (dots, labels,
+snapped bold lines, details), `fadedInk` (the child's joining strokes,
+CSS opacity 0.3, copied over the moment a dot is reached or the pen
+lifts) and `ink` (the stroke in progress, and the pointer target). Once
+complete, the same pen colours instead: a slide-out palette drawer picks
+the colour, and strokes go straight onto `paint`. Colouring is
+deliberately neither clipped to the outline nor ever replaced by a fill -
+the child's own strokes *are* the finished picture. Dot labels (numbers/
+letters) come from a `labels` input backed by `App`'s shared `dotLabels`
+signal, like `cursive`. jsdom has no canvas or `Path2D`, so nothing
+canvas-related may run before the first real layout (`width === 0`
+guards) - unit tests would crash otherwise.
 
 **Gotcha hit once, worth remembering:** an `effect()` that both *writes*
 a signal and, through a function it calls (like `draw()`), also *reads*

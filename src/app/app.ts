@@ -1,4 +1,5 @@
 import { Component, computed, signal, viewChild } from '@angular/core';
+import { DotLabelMode } from './connect-dots/connect-dots';
 import { Home } from './home/home';
 import { Practice } from './practice/practice';
 import { TraceLine } from './trace-line/trace-line';
@@ -28,6 +29,9 @@ export class App {
 
   // A shared preference, not reset when navigating between screens.
   protected readonly cursive = signal(false);
+  // Connect the Dots: label dots 1, 2, 3... or A, B, C... - also shared,
+  // so it sticks while moving between pictures.
+  protected readonly dotLabels = signal<DotLabelMode>('numbers');
 
   // State for the 'custom' screen only.
   protected readonly word = signal('hello');

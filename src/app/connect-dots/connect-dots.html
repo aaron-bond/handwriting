@@ -1,0 +1,46 @@
+<div class="trace-card">
+  <div class="connect-dots" #container>
+    <canvas #paint class="layer"></canvas>
+    <canvas #art class="layer"></canvas>
+    <canvas #fadedInk class="layer faded-ink"></canvas>
+    @if (nextDot(); as dot) {
+      <div class="next-dot" [style.left.px]="dot[0]" [style.top.px]="dot[1]" aria-hidden="true"></div>
+    }
+    <canvas
+      #ink
+      class="layer ink"
+      (pointerdown)="onPointerDown($event)"
+      (pointermove)="onPointerMove($event)"
+      (pointerup)="onPointerUp($event)"
+      (pointercancel)="onPointerUp($event)"
+    ></canvas>
+
+    @if (completed()) {
+      <div class="palette" [class.palette--open]="paletteOpen()">
+        <button
+          type="button"
+          class="palette-handle"
+          [class.palette-handle--hint]="!paletteOpen()"
+          [attr.aria-expanded]="paletteOpen()"
+          aria-label="Colours"
+          (click)="togglePalette()"
+        >
+          🎨
+        </button>
+        <div class="palette-swatches" role="group" aria-label="Colours">
+          @for (colour of paintColours; track colour.value) {
+            <button
+              type="button"
+              class="swatch"
+              [class.swatch--active]="colour.value === paintColour()"
+              [style.background]="colour.value"
+              [attr.aria-label]="colour.name"
+              [attr.aria-pressed]="colour.value === paintColour()"
+              (click)="pickColour(colour.value)"
+            ></button>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>
