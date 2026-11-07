@@ -163,3 +163,37 @@
   background: var(--accent-dark, var(--color-primary-dark));
   transform: translateY(-1px);
 }
+
+/* Confirmation after Save picture, popping up just above the button.
+   The <p> is always present (an aria-live region only announces changes
+   to something already in the DOM); only the pill inside comes and goes. */
+.saved-notice {
+  position: absolute;
+  left: 0;
+  bottom: 56px;
+  margin: 0;
+  pointer-events: none;
+}
+
+.saved-notice-pill {
+  display: inline-block;
+  font-weight: 700;
+  font-size: 15px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: #d3f9d8;
+  color: #2b8a3e;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 10%);
+  animation: saved-pop 0.3s ease-out;
+}
+
+@keyframes saved-pop {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

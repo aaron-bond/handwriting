@@ -16,7 +16,14 @@
     ></canvas>
 
     @if (completed()) {
-      <button type="button" class="save-picture" (click)="savePicture()">📷 Save picture</button>
+      <button type="button" class="save-picture" (click)="savePicture()">
+        {{ savedNotice() ? '✅ Saved!' : '📷 Save picture' }}
+      </button>
+      <p class="saved-notice" role="status" aria-live="polite">
+        @if (savedNotice()) {
+          <span class="saved-notice-pill">Picture saved to Downloads</span>
+        }
+      </p>
 
       <div class="palette" [class.palette--open]="paletteOpen()">
         <button

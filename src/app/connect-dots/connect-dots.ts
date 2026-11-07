@@ -33,6 +33,8 @@ const INK_COLOR = '#5c7cfa';
 const FADED_INK_OPACITY = 0.3;
 // Margin (CSS px) left around the drawing in a saved picture.
 const SAVE_MARGIN = 24;
+// How long the "Saved!" confirmation stays up.
+const SAVED_NOTICE_MS = 3000;
 // See TraceLine's MAX_UNDO_STEPS - same "whole canvas per snapshot" cost.
 const MAX_UNDO_STEPS = 25;
 
@@ -440,6 +442,12 @@ export class ConnectDots {
   // the picture is finished, for the child to pull out.
   protected readonly paletteOpen = signal(false);
 
+  // Briefly true after Save picture - there's often no visible browser
+  // download UI (none at all in the installed fullscreen app), so the
+  // page has to say so itself.
+  protected readonly savedNotice = signal(false);
+  private savedNoticeTimer?: ReturnType<typeof setTimeout>;
+
   private readonly _result = signal<TracingResult | null>(null);
   readonly result = this._result.asReadonly();
 
@@ -463,7 +471,10 @@ export class ConnectDots {
       document.fonts.load('800 16px Nunito').then(() => this.draw());
     });
 
-    inject(DestroyRef).onDestroy(() => this.resizeObserver?.disconnect());
+    inject(DestroyRef).onDestroy(() => {
+      this.resizeObserver?.disconnect();
+      clearTimeout(this.savedNoticeTimer);
+    });
 
     effect(() => {
       this.picture();
@@ -699,6 +710,10 @@ export class ConnectDots {
       link.click();
       // Give the browser a moment to start the download before revoking.
       setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+      clearTimeout(this.savedNoticeTimer);
+      this.savedNotice.set(true);
+      this.savedNoticeTimer = setTimeout(() => this.savedNotice.set(false), SAVED_NOTICE_MS);
     }, 'image/png');
   }
 
