@@ -315,6 +315,60 @@ export function labelDirection(prev: Point, point: Point, next: Point): Point {
   return [toNext[1], -toNext[0]];
 }
 
+// Where one stroke stands in joining the dots.
+export interface StrokeProgress {
+  reached: number; // dots joined so far, in order (0 = not even dot 1)
+  // Whether this stroke has touched the last joined dot (dot 1, for a
+  // fresh picture). Only an anchored stroke can reach the next dot - the
+  // line has to be drawn *from* the previous dot, not just tapped onto
+  // the next one.
+  anchored: boolean;
+  // Pen distance (px) covered since the last dot it joined or anchored on.
+  travel: number;
+}
+
+// Advances a stroke by one pointer segment A->B over the picture's dots.
+// Pure, so the "no cheating by tapping" rules can be unit tested:
+// - The stroke must start on (or pass through) the last joined dot. A
+//   tap straight onto the next dot never touches the previous one, so it
+//   counts for nothing - previously every tap reached the next dot, so a
+//   picture could be finished just by tapping 1, 2, 3... in order.
+// - The pen must actually travel at least half the gap between the two
+//   dots - otherwise one tap between two close dots (e.g. the house's
+//   chimney corners) could sit within HIT_RADIUS of both at once.
+// - Hits are measured against the whole segment, not just its end, so a
+//   fast stroke can't jump clean over a dot. Leftover travel carries over,
+//   so one long segment can join several dots in a row.
+export function advanceStroke(
+  progress: StrokeProgress,
+  points: Point[],
+  [ax, ay]: Point,
+  [bx, by]: Point,
+): StrokeProgress {
+  let { reached, anchored, travel } = progress;
+  const near = ([px, py]: Point) => distanceToSegment(px, py, ax, ay, bx, by) <= HIT_RADIUS;
+  travel += Math.hypot(bx - ax, by - ay);
+
+  if (!anchored) {
+    if (points.length === 0 || !near(points[Math.max(0, reached - 1)])) return { reached, anchored, travel };
+    anchored = true;
+    travel = 0;
+    // Dot 1 has no previous dot to come from - putting the pen on it is
+    // how a picture starts.
+    if (reached === 0) reached = 1;
+  }
+
+  while (reached > 0 && reached < points.length) {
+    const [qx, qy] = points[reached - 1];
+    const next = points[reached];
+    const gap = Math.hypot(next[0] - qx, next[1] - qy);
+    if (!near(next) || travel < gap / 2) break;
+    reached++;
+    travel = Math.max(0, travel - gap);
+  }
+  return { reached, anchored, travel };
+}
+
 interface UndoState {
   reached: number;
   fadedInk: ImageData;
@@ -348,6 +402,9 @@ export class ConnectDots {
 
   private resizeObserver?: ResizeObserver;
   private drawing = false;
+  // Per-stroke anchoring/travel - see advanceStroke(). Reset on pen-down.
+  private anchored = false;
+  private travel = 0;
   private lastX = 0;
   private lastY = 0;
   private width = 0;
@@ -521,7 +578,10 @@ export class ConnectDots {
       // A tap leaves a blob of colour, like a real crayon would.
       this.paintSegment(this.lastX, this.lastY, event);
     } else {
-      // A tap straight onto the next dot counts too.
+      // Pen-down on the last joined dot anchors the stroke (and on dot 1
+      // starts the picture) - but never reaches a *new* dot by itself.
+      this.anchored = false;
+      this.travel = 0;
       this.checkReached(this.lastX, this.lastY, this.lastX, this.lastY);
     }
   }
@@ -589,18 +649,21 @@ export class ConnectDots {
     this.paintColour.set(value);
   }
 
-  // Advances past every next-in-order dot this pointer segment passed
-  // over (a loop, so one sweeping stroke can join several). Out-of-order
-  // dots are simply ignored - no error state.
+  // Advances past every next-in-order dot this pointer segment validly
+  // reached (see advanceStroke for the rules). Out-of-order dots are
+  // simply ignored - no error state.
   private checkReached(ax: number, ay: number, bx: number, by: number): void {
-    const points = this.positions();
-    let advanced = false;
-    while (this.reached() < points.length) {
-      const [px, py] = points[this.reached()];
-      if (distanceToSegment(px, py, ax, ay, bx, by) > HIT_RADIUS) break;
-      this.reached.update((n) => n + 1);
-      advanced = true;
-    }
+    const before = this.reached();
+    const progress = advanceStroke(
+      { reached: before, anchored: this.anchored, travel: this.travel },
+      this.positions(),
+      [ax, ay],
+      [bx, by],
+    );
+    this.anchored = progress.anchored;
+    this.travel = progress.travel;
+    this.reached.set(progress.reached);
+    const advanced = progress.reached > before;
     if (!advanced) return;
 
     this.fadeInk();

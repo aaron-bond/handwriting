@@ -156,6 +156,18 @@ this file is just the backlog.
       - **Undo** stays per-stroke and raster-based (dots-reached count
         plus faded-ink and paint snapshots), since the freehand ink is
         kept. Undoing a colouring stroke keeps the picture finished.
+      - **Fixed after launch: tapping could finish a picture.** Every
+        tap counted as a tiny stroke that "reached" the next dot, so
+        tapping 1, 2, 3... in order completed it with no line drawn
+        (reported by a user). Now a stroke must start on (or pass
+        through) the last joined dot, and the pen must travel at least
+        half the gap to the next one (close dots, like the chimney
+        corners, could otherwise both sit within one tap's reach).
+        Pure `advanceStroke()` with unit tests for each rule. Trade-off:
+        resuming a line from mid-air after lifting the pen doesn't count
+        - restart from the last dot, like paper dot-to-dots. Revisit
+        (e.g. also anchor on the end of their previous stroke) if kids
+        find that frustrating.
       - Multi-stroke pictures (e.g. a cat's whiskers) and skip-counting
         labels (2, 4, 6...) are still unbuilt - wait for kid feedback.
 - [x] Colour in a finished Connect the Dots picture - once the last dot
